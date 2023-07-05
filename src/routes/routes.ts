@@ -298,11 +298,11 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/user',
+        app.post('/user/register',
             ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.createUser)),
+            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.registerUser)),
 
-            function UserController_createUser(request: any, response: any, next: any) {
+            function UserController_registerUser(request: any, response: any, next: any) {
             const args = {
                     body: {"in":"body","name":"body","required":true,"ref":"IUserCreate"},
             };
@@ -316,7 +316,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new UserController();
 
 
-              const promise = controller.createUser.apply(controller, validatedArgs as any);
+              const promise = controller.registerUser.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
