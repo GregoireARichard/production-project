@@ -7,8 +7,8 @@ export class Email {
   
   constructor() {
     this.client = new Client({
-      apiKey: process.env.MJ_APIKEY ||  '650c4a928026033d089089cc09e870f2',
-      apiSecret: process.env.MJ_APISECRET || '69f7bdf5eaa69818892bb4e3828569cc'
+      apiKey: process.env.MJ_APIKEY ||  '8393ce65a494a4d005d151393ea5c859',
+      apiSecret: process.env.MJ_APISECRET || '52abdfb9c873ac741c81ee2560ea12ac'
     });
   }
 
@@ -20,7 +20,7 @@ export class Email {
         "Messages": [
           {
             "From": {
-              "Email": process.env.MJ_EMAIL_FROM || 'kevin@nguni.fr',
+              "Email": process.env.MJ_EMAIL_FROM || 'gregoire.richard86@gmail.com',
               "Name": process.env.MJ_EMAIL_NAME || 'Kevin'
             },
             "To": [
