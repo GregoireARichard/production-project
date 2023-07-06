@@ -5,7 +5,8 @@ USE production;
 CREATE TABLE `user` (
   `id` INT AUTO_INCREMENT,
   `email` VARCHAR(255),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_email` (`email`)
 );
 
 CREATE TABLE `meta_user_info` (
@@ -18,13 +19,6 @@ CREATE TABLE `meta_user_info` (
   FOREIGN KEY (`id_user`) REFERENCES `user`(`id`)
 );
 
-CREATE TABLE `user_exercice` (
-  `id_user` INT,
-  `last_exercice_validate_id` INT,
-  `points` INT,
-  FOREIGN KEY (`id_user`) REFERENCES `user`(`id`)
-);
-
 CREATE TABLE `exercise` (
   `id` INT AUTO_INCREMENT,
   `name` VARCHAR(255),
@@ -33,4 +27,4 @@ CREATE TABLE `exercise` (
 
 create user IF NOT EXISTS 'produsr'@'%.%.%.%' identified by 'prodpswd';
 grant select, update, insert, delete on production.* to 'produsr'@'%.%.%.%';
-flush privileges;
+
