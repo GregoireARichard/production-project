@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router,  Request, Response } from "express";
 import { Get, Query, Route } from 'tsoa';
 import { IUserRO } from "../model/User/IUser";
 import { IAccessToken } from "../types/auth/IAccessToken";
@@ -7,6 +7,7 @@ import { Email } from "../utility/Email";
 import { ApiError } from "../utility/Error/ApiError";
 import { ErrorCode } from "../utility/Error/ErrorCode";
 import { JWT } from "../utility/JWT";
+import * as cookieParser from 'cookie-parser';
 
 
 export const ISSUER = "api-auth";
@@ -19,46 +20,46 @@ const router = Router({ mergeParams: true });
 @Route("/auth")
 export class AuthController {
   
-  @Get("/magic")
-  public async sendMagicLink(  
-    @Query() email: string,        
-  ): Promise<{ ok: boolean}> {    
-    if (!email) {
-      throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Email is missing in magic link request.");
-    }
+  // @Get("/magic")
+  // public async sendMagicLink(  
+  //   @Query() email: string,        
+  // ): Promise<{ ok: boolean}> {    
+  //   if (!email) {
+  //     throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Email is missing in magic link request.");
+  //   }
 
-    // Vérifier si on a un utilisateur avec l'adresse email dans notre base
-    const user = await Crud.Read<IUserRO>({
-      table: 'user',
-      idKey: 'email',
-      idValue: email,
-      columns: ['userId', 'email']
-    });
+  //   // Vérifier si on a un utilisateur avec l'adresse email dans notre base
+  //   const user = await Crud.Read<IUserRO>({
+  //     table: 'user',
+  //     idKey: 'email',
+  //     idValue: email,
+  //     columns: ['userId', 'email']
+  //   });
 
    
-    // Create the new JWT
-    const jwt = new JWT();
-    const encoded = await jwt.create({
-      userId: user.userId,
-    }, {
-      expiresIn: '30 minutes',
-      audience: MAGIC_AUD,
-      issuer: ISSUER
-    }) as string;
+  //   // Create the new JWT
+  //   const jwt = new JWT();
+  //   const encoded = await jwt.create({
+  //     userId: user.userId,
+  //   }, {
+  //     expiresIn: '30 minutes',
+  //     audience: MAGIC_AUD,
+  //     issuer: ISSUER
+  //   }) as string;
     
-    const emailer = new Email();
+  //   const emailer = new Email();
 
-    const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
-    await emailer.sendMagicLink(email, link, 'Mon service');
+  //   const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
+  //   await emailer.sendMagicLink(email, link, 'Mon service');
 
-    return {
-      ok: true
-    };
-  }
+  //   return {
+  //     ok: true
+  //   };
+  // }
 
   @Get("/login")
   public async loginFromMaginLink(  
-    @Query() jwt: string,        
+    @Query() jwt: string,    
   ): Promise<{ 
     access: string;
     renew: string;
@@ -104,6 +105,10 @@ export class AuthController {
       issuer: ISSUER,
       audience: RENEW_AUD,
     }) as string;
+
+    // Définition du cookie
+    // res.cookie('UserCookie', access, { maxAge: 720000, httpOnly: true });
+
 
     return {
       access: access,
