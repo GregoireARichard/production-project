@@ -160,42 +160,6 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
-		"/auth/magic": {
-			"get": {
-				"operationId": "SendMagicLink",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"ok": {
-											"type": "boolean"
-										}
-									},
-									"required": [
-										"ok"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "email",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/auth/login": {
 			"get": {
 				"operationId": "LoginFromMaginLink",
@@ -495,16 +459,26 @@
 						}
 					}
 				]
-			},
+			}
+		},
+		"/user/register": {
 			"post": {
-				"operationId": "CreateUser",
+				"operationId": "RegisterUser",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ICreateResponse"
+									"properties": {
+										"ok": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"ok"
+									],
+									"type": "object"
 								}
 							}
 						}

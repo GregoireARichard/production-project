@@ -2,6 +2,8 @@ import Express, { json } from "express";
 import swaggerUi from "swagger-ui-express";
 import { DefaultErrorHandler } from "./middleware/error-handler.middleware";
 import { RegisterRoutes } from './routes/routes';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 
 // Récupérer le port des variables d'environnement ou préciser une valeur par défaut
@@ -12,6 +14,10 @@ const app = Express();
 
 // L'appli parse le corps du message entrant comme du json
 app.use(json());
+
+app.use(cors());
+
+app.use(cookieParser());
 
 RegisterRoutes(app);
 
