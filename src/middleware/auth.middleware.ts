@@ -13,7 +13,6 @@ export const JWTAuthHandler = async (request: Request, response: Response, next:
     }
 
     const token = authheader.split('Bearer ')[1];
-    console.log(authheader);
 
 
     const jwt = new JWT();
@@ -26,7 +25,6 @@ export const JWTAuthHandler = async (request: Request, response: Response, next:
       
     } catch (err: any) {
       if (err?.name === "TokenExpiredError") {
-        console.log("Token was expired.");
         
         throw new ApiError(ErrorCode.TokenExpired, 'auth/access-token-expired', 'Access token expired. Try renew it with the renew token.');
       }
