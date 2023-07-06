@@ -19,9 +19,7 @@ const models: TsoaRoute.Models = {
     "IUser": {
         "dataType": "refObject",
         "properties": {
-            "userId": {"dataType":"double","required":true},
-            "familyName": {"dataType":"string"},
-            "givenName": {"dataType":"string"},
+            "id": {"dataType":"double","required":true},
             "email": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -46,19 +44,19 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_IUser.Exclude_keyofIUser.userId__": {
+    "Pick_IUser.Exclude_keyofIUser.id__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"familyName":{"dataType":"string"},"givenName":{"dataType":"string"},"email":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Omit_IUser.userId_": {
+    "Omit_IUser.id_": {
         "dataType": "refAlias",
-        "type": {"ref":"Pick_IUser.Exclude_keyofIUser.userId__","validators":{}},
+        "type": {"ref":"Pick_IUser.Exclude_keyofIUser.id__","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUserCreate": {
         "dataType": "refAlias",
-        "type": {"ref":"Omit_IUser.userId_","validators":{}},
+        "type": {"ref":"Omit_IUser.id_","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUpdateResponse": {
@@ -72,7 +70,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_IUserCreate_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"familyName":{"dataType":"string"},"givenName":{"dataType":"string"},"email":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUserUpdate": {
