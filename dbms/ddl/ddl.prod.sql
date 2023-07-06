@@ -1,4 +1,4 @@
-CREATE DATABASE production;
+CREATE DATABASE IF NOT EXISTS production;
 
 USE production;
 
@@ -30,3 +30,7 @@ CREATE TABLE `exercise` (
   `name` VARCHAR(255),
   PRIMARY KEY (`id`)
 );
+
+create user IF NOT EXISTS 'produsr'@'%.%.%.%' identified by 'prodpswd';
+grant select, update, insert, delete on production.* to 'produsr'@'%.%.%.%';
+flush privileges;
