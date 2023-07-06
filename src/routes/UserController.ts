@@ -3,6 +3,8 @@ import { IUser, IUserCreate, IUserUpdate } from '../model/User/IUser';
 import { ICreateResponse } from '../types/ICreateResponse';
 import { IIndexResponse } from '../types/IIndexQuery';
 import { IUpdateResponse } from '../types/IUpdateResponse';
+import { ApiError } from "../utility/Error/ApiError";
+import { ErrorCode } from "../utility/Error/ErrorCode";
 import { Crud } from '../utility/Crud';
 import { Email } from "../utility/Email";
 import { JWT } from "../utility/JWT";
@@ -57,6 +59,10 @@ export class UserController {
   public async registerUser(
     @Body() body: IUserCreate
   ): Promise<{ ok: boolean}> {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(body.email)) {
+      throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Bad Email");
+      }
     //on crée l'utilisateur en base 
     const user =  await Crud.Create<IUserCreate>({
       body: body, 
@@ -75,10 +81,13 @@ export class UserController {
 
         //Enfin envoi de mail
         const emailer = new Email();
-    
         const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
-        await emailer.sendMagicLink(body.email, link, 'Mon service');
-    
+        try {
+          await emailer.sendMagicLink(body.email, link, 'Mon service');
+        } catch (error) {
+          throw new ApiError(ErrorCode.InternalError, 'internal/unknown', "Mailjet Error.");
+        }
+
         return {
           ok: true
         };

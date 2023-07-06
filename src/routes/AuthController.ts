@@ -7,7 +7,6 @@ import { Email } from "../utility/Email";
 import { ApiError } from "../utility/Error/ApiError";
 import { ErrorCode } from "../utility/Error/ErrorCode";
 import { JWT } from "../utility/JWT";
-import * as cookieParser from 'cookie-parser';
 
 
 export const ISSUER = "api-auth";
@@ -84,9 +83,9 @@ export class AuthController {
     // Vérifier que l'utilisateur existe toujours
     const user = await Crud.Read<IUserRO>({
       table: 'user',
-      idKey: 'userId',
+      idKey: 'id',
       idValue: decoded.userId,
-      columns: ['userId']
+      columns: ['id']
     });
 
     let payload: IAccessToken = {
@@ -105,9 +104,6 @@ export class AuthController {
       issuer: ISSUER,
       audience: RENEW_AUD,
     }) as string;
-
-    // Définition du cookie
-    // res.cookie('UserCookie', access, { maxAge: 720000, httpOnly: true });
 
 
     return {
