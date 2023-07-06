@@ -27,4 +27,4 @@ CREATE TABLE `exercise` (
 
 create user IF NOT EXISTS 'produsr'@'%.%.%.%' identified by 'prodpswd';
 grant select, update, insert, delete on production.* to 'produsr'@'%.%.%.%';
-flush privileges;
+
