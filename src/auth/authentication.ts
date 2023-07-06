@@ -10,7 +10,7 @@ export async function expressAuthentication(
   request: Request,
   securityName: string,
   scopes?: string[]
-): Promise<boolean> {
+): Promise<any> {
 
   if (securityName === 'jwt') {
     const authheader = request.headers.authorization || '';
@@ -43,10 +43,10 @@ export async function expressAuthentication(
 
     if (!decoded.userId) {
       throw new ApiError(ErrorCode.Unauthorized, 'auth/invalid-access-token', "userId was not found in the payload");
-    }    
+    }  
 
-    return true;
+    return Promise.resolve({userId: decoded.userId})
   }
 
-  return false;
+  return Promise.reject({});
 }

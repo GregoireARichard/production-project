@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ApiError } from "../../utility/Error/ApiError";
 import { ErrorCode } from "../../utility/Error/ErrorCode";
-import { Get, Query, Route, Security } from 'tsoa';
+import { Body, Post, Get, Query, Route, Security, Request } from 'tsoa';
 import {SSH} from '../../utility/SSH';
 
 const router = Router({ mergeParams: true });
@@ -9,8 +9,9 @@ const router = Router({ mergeParams: true });
 @Route("/production")
 @Security('jwt')
 export class ProductionController{
-    @Get("/ssh")
-    public async ProdController_sshConnexion()
+
+    @Post("/ssh")
+    public async ProdController_sshConnexion(@Body() body: any, @Request() request: any)
     {
         try {
             // On récupère l'id de l'utilisateur dans le jwt
@@ -18,7 +19,8 @@ export class ProductionController{
             // Si on à les infos, on teste la connexion ssh
             // Si connexion ssh on teste connexion à la BDD distante
             // Si connexion à la BDD distante
-    
+            const userId =  request.user.userId;
+            console.log("MON BODY", body, userId)
             const ssh = await SSH.getSSHConnexion({
                 host: '193.70.84.157',
                 username: 'ubuntu',
@@ -29,7 +31,7 @@ export class ProductionController{
                 throw new ApiError(500, "ssh/connexion failed", "SSH connection failed");
             }
 
-            const command = await ssh.execCommand("toto");
+            const command = await ssh.execCommand("ls -l");
 
             return {"stdout": command.stdout, "stderr": command.stderr};
             
