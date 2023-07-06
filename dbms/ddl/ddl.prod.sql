@@ -1,10 +1,10 @@
-CREATE DATABASE production;
+CREATE DATABASE IF NOT EXISTS production;
 
 USE production;
 
 CREATE TABLE `user` (
   `id` INT AUTO_INCREMENT,
-  `email` VARCHAR(255),
+  `email` VARCHAR(255) ADD UNIQUE INDEX `unique_email` (`email`),
   PRIMARY KEY (`id`)
 );
 
@@ -30,3 +30,7 @@ CREATE TABLE `exercise` (
   `name` VARCHAR(255),
   PRIMARY KEY (`id`)
 );
+
+create user IF NOT EXISTS 'produsr'@'%.%.%.%' identified by 'prodpswd';
+grant select, update, insert, delete on production.* to 'produsr'@'%.%.%.%';
+flush privileges;
