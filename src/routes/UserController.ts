@@ -14,7 +14,7 @@ export const MAGIC_AUD = "api-magic"
 export const ACCESS_AUD = "api-access";
 export const RENEW_AUD = "api-renew";
 
-const READ_COLUMNS = ['userId', 'familyName', 'givenName', 'email'];
+const READ_COLUMNS = ['id', 'email'];
 
 /**
  * Un utilisateur de la plateforme.
@@ -105,7 +105,7 @@ export class UserController {
   ): Promise<IUser> {
     return Crud.Read<IUser>({
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId, 
       columns: READ_COLUMNS
     });
@@ -122,7 +122,7 @@ export class UserController {
     return Crud.Update<IUserUpdate>({
       body: body, 
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId
     });
   }
@@ -136,7 +136,7 @@ export class UserController {
   ): Promise<IUpdateResponse> {
     return Crud.Delete({
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId
     });
   }

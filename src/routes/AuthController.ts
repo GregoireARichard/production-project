@@ -89,7 +89,7 @@ export class AuthController {
     });
 
     let payload: IAccessToken = {
-      userId: user.userId
+      userId: user.id
     };
     
 
