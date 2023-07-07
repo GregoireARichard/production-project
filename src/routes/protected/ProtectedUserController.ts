@@ -1,9 +1,10 @@
-import { Body, Delete, Get, Path, Post, Put, Query, Route, Security } from 'tsoa';
+import { Body, Delete, Get, Path, Post, Put, Query, Route, Security,Request } from 'tsoa';
 import { IUser, IUserCreate, IUserUpdate } from '../../model/User/IUser';
 import { ICreateResponse } from '../../types/ICreateResponse';
 import { IIndexResponse } from '../../types/IIndexQuery';
 import { IUpdateResponse } from '../../types/IUpdateResponse';
 import { Crud } from '../../utility/Crud';
+;
 
 const READ_COLUMNS = ['id', 'email'];
 
@@ -23,7 +24,8 @@ export class ProtectedUserController {
     @Query() page?: string,    
     /** Le nombre d'éléments à récupérer (max 50) */
     @Query() limit?: string,    
-  ): Promise<IIndexResponse<IUser>> {    
+  ): Promise<IIndexResponse<IUser>> {
+    
     return Crud.Index<IUser>({
       query: { page, limit }, 
       table: 'user', 

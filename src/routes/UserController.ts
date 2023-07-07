@@ -63,12 +63,25 @@ export class UserController {
     if (!regexEmail.test(body.email)) {
       throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Bad Email");
       }
-    //on crée l'utilisateur en base 
-    const user =  await Crud.Create<IUserCreate>({
-      body: body, 
-      table: 'user'
+    const existUser = await Crud.CheckExists<IUser>({
+      table: 'user', 
+      idKey: 'email', 
+      idValue: body.email, 
+      columns: READ_COLUMNS
     });
-
+    let user: IUser | ICreateResponse;
+    if (existUser instanceof Object) {
+      user = existUser as IUser;
+      // console.log("utilisateur deja existant",user);
+    }
+    else{
+        //on crée l'utilisateur en base
+       user = await Crud.Create<IUserCreate>({
+        body: body, 
+        table: 'user'
+      });
+    }
+   
         //  Ensuite Create the new JWT (est ce que je ne dois pas le mettre dans un then ?)
         const jwt = new JWT();
         const encoded = await jwt.create({

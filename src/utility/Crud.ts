@@ -117,6 +117,22 @@ export class Crud {
     }
   }
 
+  public static async CheckExists<T>(options: {
+    table: DbTable, 
+    idKey: string, 
+    idValue: number|string, 
+    columns: string[]
+  }): Promise< T | boolean> {
+    const db = DB.Connection;
+    const data = await db.query<T[] & RowDataPacket[]>(`select ${options.columns.join(',')} from ${options.table} where ${options.idKey} = ?`, [options.idValue]);      
+
+    if (data[0].length > 0) {
+      return data[0][0];
+    } else {
+      return false
+    }
+  }
+
   public static async Delete(options: {
     table: DbTable, 
     idKey: string, 
