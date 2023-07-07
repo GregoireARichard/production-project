@@ -30,6 +30,20 @@ services:
     networks:
       - api-network
 
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    depends_on:
+        - dbms
+    ports:
+        - '8181:80'
+    environment:
+        - PMA_ARBITRARY=1
+        - PMA_HOST=dbms
+    networks:
+        - api-network
+
+
   proxy:
     image: nginx
     ports:

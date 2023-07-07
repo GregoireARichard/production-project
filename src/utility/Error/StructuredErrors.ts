@@ -17,6 +17,11 @@ export type StructuredErrors =
 
   //registration
   'user/register/user-already-exists' |
+  // SSH
+  'ssh/connexion failed' |
+
+  //MySQL
+  'mysql/connexion failed' |
 
   // Default
   'internal/unknown'
