@@ -69,11 +69,12 @@ export class UserController {
       idValue: body.email, 
       columns: READ_COLUMNS
     });
-    let user;
+    let user: IUser | ICreateResponse;
     if (existUser instanceof Object) {
       user = existUser as IUser;
       // console.log("utilisateur deja existant",user);
-    }else{
+    }
+    else{
         //on crée l'utilisateur en base
        user = await Crud.Create<IUserCreate>({
         body: body, 
