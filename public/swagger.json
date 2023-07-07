@@ -200,8 +200,12 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"stderr": {},
-										"stdout": {}
+										"stderr": {
+											"type": "string"
+										},
+										"stdout": {
+											"type": "string"
+										}
 									},
 									"required": [
 										"stderr",
