@@ -12,6 +12,15 @@ Avant de lancer le serveur il faut d'abord préparer la base de données :
 mycli -h dbms -u root < ./dbms/ddl/ddl.prod.sql
 ```
 
+On génère les clé pour le JWT:
+
+```bash
+cd ./secrets/signing
+ssh-keygen -t rsa -b 2048 -m PEM -f signing.key
+openssl rsa -in signing.key -pubout -outform PEM -out signing.pub
+cd ./../..
+```
+
 Ensuite, on peut lancer le serveur avec :
 
 ```bash
