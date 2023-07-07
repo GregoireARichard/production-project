@@ -15,6 +15,11 @@ export type StructuredErrors =
   'auth/access-token-expired' |
   'auth/invalid-access-token' |
 
+  // SSH
+  'ssh/connexion failed' |
+
+  //MySQL
+  'mysql/connexion failed' |
 
   // Default
   'internal/unknown'
