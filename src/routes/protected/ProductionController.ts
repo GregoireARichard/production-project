@@ -19,12 +19,12 @@ export class ProductionController{
             // Si on à les infos, on teste la connexion ssh
             // Si connexion ssh on teste connexion à la BDD distante
             // Si connexion à la BDD distante
-            const userId =  request.user.userId;
-            console.log("MON BODY", body, userId)
+            const { userId } =  request.user;
+            
             const ssh = await SSH.getSSHConnexion({
-                host: '193.70.84.157',
-                username: 'ubuntu',
-                port: 22
+                host: body.host,
+                username: body.username,
+                port: body?.port || 22
             })
 
             if(!ssh) {

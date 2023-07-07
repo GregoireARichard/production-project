@@ -4,8 +4,9 @@ USE production;
 
 CREATE TABLE `user` (
   `id` INT AUTO_INCREMENT,
-  `email` VARCHAR(255) ADD UNIQUE INDEX `unique_email` (`email`),
-  PRIMARY KEY (`id`)
+  `email` VARCHAR(255),
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_email` (`email`)
 );
 
 CREATE TABLE `meta_user_info` (
