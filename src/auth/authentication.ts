@@ -30,7 +30,6 @@ export async function expressAuthentication(
       
     } catch (err: any) {
       if (err?.name === "TokenExpiredError") {
-        console.log("Token was expired.");
         
         throw new ApiError(ErrorCode.TokenExpired, 'auth/access-token-expired', 'Access token expired. Try renew it with the renew token.');
       }

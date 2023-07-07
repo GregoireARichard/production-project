@@ -5,7 +5,7 @@ import { IIndexResponse } from '../../types/IIndexQuery';
 import { IUpdateResponse } from '../../types/IUpdateResponse';
 import { Crud } from '../../utility/Crud';
 
-const READ_COLUMNS = ['userId', 'familyName', 'givenName', 'email'];
+const READ_COLUMNS = ['id', 'email'];
 
 /**
  * Un utilisateur de la plateforme.
@@ -53,7 +53,7 @@ export class ProtectedUserController {
   ): Promise<IUser> {
     return Crud.Read<IUser>({
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId, 
       columns: READ_COLUMNS
     });
@@ -70,7 +70,7 @@ export class ProtectedUserController {
     return Crud.Update<IUserUpdate>({
       body: body, 
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId
     });
   }
@@ -84,7 +84,7 @@ export class ProtectedUserController {
   ): Promise<IUpdateResponse> {
     return Crud.Delete({
       table: 'user', 
-      idKey: 'userId', 
+      idKey: 'id', 
       idValue: userId
     });
   }

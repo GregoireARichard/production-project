@@ -85,7 +85,7 @@ export class UserController {
         try {
           await emailer.sendMagicLink(body.email, link, 'Mon service');
         } catch (error) {
-          throw new ApiError(ErrorCode.InternalError, 'internal/unknown', "Mailjet Error.", {linkJwt:link} );
+          throw new ApiError(ErrorCode.InternalError, 'internal/unknown', `Mailjet Error.`, {linkJwt:link});
         }
 
         return {

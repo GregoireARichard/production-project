@@ -52,7 +52,6 @@ export class Crud {
       whereClause = 'where  ' + whereList.join(' and ');
     }
 
-    // console.log(mysql.format(`select count(*) as total from ${table} ${whereClause}`, whereValues))
 
     const count = await db.query<ITableCount[] & RowDataPacket[]>(`select count(*) as total from ${options.table} ${whereClause}`, whereValues);      
 
