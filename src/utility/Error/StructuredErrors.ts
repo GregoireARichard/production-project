@@ -15,6 +15,8 @@ export type StructuredErrors =
   'auth/access-token-expired' |
   'auth/invalid-access-token' |
 
+  //registration
+  'user/register/user-already-exists' |
 
   // Default
   'internal/unknown'

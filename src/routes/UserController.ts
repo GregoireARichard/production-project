@@ -63,6 +63,15 @@ export class UserController {
     if (!regexEmail.test(body.email)) {
       throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Bad Email");
       }
+    const existUser = await Crud.Read<IUser>({
+      table: 'user', 
+      idKey: 'email', 
+      idValue: body.email, 
+      columns: READ_COLUMNS
+    });
+    if(existUser){
+      throw new ApiError(ErrorCode.Unauthorized, 'user/register/user-already-exists', "The user is already exist", {userId:existUser.id});
+    }
     //on crée l'utilisateur en base 
     const user =  await Crud.Create<IUserCreate>({
       body: body, 

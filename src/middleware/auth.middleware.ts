@@ -42,6 +42,8 @@ export const JWTAuthHandler = async (request: Request, response: Response, next:
     // Validé, stocker le userId sur la réponse pour utilisation plus tard
     response.locals.userId = decoded.userId;
 
+    console.log("heyyyy");
+
     next();
 
   } catch (err) {
