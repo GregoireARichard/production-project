@@ -18,6 +18,9 @@ export type StructuredErrors =
   // SSH
   'ssh/connexion failed' |
 
+  //MySQL
+  'mysql/connexion failed' |
+
   // Default
   'internal/unknown'
 ;

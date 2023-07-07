@@ -3,6 +3,11 @@ import { ApiError } from "../../utility/Error/ApiError";
 import { ErrorCode } from "../../utility/Error/ErrorCode";
 import { Body, Post, Get, Query, Route, Security, Request } from 'tsoa';
 import {SSH} from '../../utility/SSH';
+import { Crud } from '../../utility/Crud';
+import { DB } from "../../utility/DB";
+import { RowDataPacket } from "mysql2";
+import mysql, { Pool } from 'mysql2/promise';
+
 
 const router = Router({ mergeParams: true });
 
@@ -20,28 +25,93 @@ export class ProductionController{
             // Si connexion ssh on teste connexion à la BDD distante
             // Si connexion à la BDD distante
             const { userId } =  request.user;
+
+            const db = DB.Connection;
+
+            if(body.name === "ssh")
+            {
+                const isMetaSSH = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='ssh'`, [userId]);
+                if(isMetaSSH[0][0].nb_rows === 0)
+                {
+                    try {
+                        const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                        await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                    } catch (error) {
+                        console.log(error);
+                        throw new ApiError(ErrorCode.BadRequest, 'validation/failed', `probably missing informations`);
+                    }
+                }
+            }
+
+            const ssh_meta_result = await db.query<RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='ssh'`, [userId]);
+
+            const ssh_meta = ssh_meta_result[0][0];
             
             const ssh = await SSH.getSSHConnexion({
-                host: body.host,
-                username: body.username,
-                port: body?.port || 22
-            })
+                host: ssh_meta.host,
+                username: ssh_meta.username,
+                port: ssh_meta.port || 22
+            });
 
             if(!ssh) {
                 throw new ApiError(500, "ssh/connexion failed", "SSH connection failed");
             }
 
+            if(body.name === "mysql")
+            {
+                const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
+                console.log(isMetaDb[0][0].nb_rows);
+                
+                if(isMetaDb[0][0].nb_rows === 0)
+                {
+                    try {
+                        const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                        await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                    } catch (error) {
+                        console.log(error);
+                        throw new ApiError(ErrorCode.BadRequest, 'validation/failed', `probably missing informations`);
+                    }
+                }
+            }
+
+            const mysql_meta_result = await db.query<RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
+
+            const mysql_meta = mysql_meta_result[0][0];
+
+            const sshTunnel = await SSH.SSHTunnel(
+                ssh,
+                '127.0.0.1',
+                3306,
+                mysql_meta.host,
+                mysql_meta.port
+              );
+              
+            const mysql_pool = mysql.createPool({
+                host: mysql_meta.host,
+                user: mysql_meta.username,
+                password: mysql_meta.password,
+                database: 'rgpd',
+                port: mysql_meta.port,
+                stream: sshTunnel
+            });
+              
+              const mysql_connexion = await mysql_pool.getConnection();
+              
+              const result_query = await mysql_connexion.query("SHOW TABLES;");
+              
+              console.log(result_query[0]);
+            
             const command = await ssh.execCommand("ls -l");
+            
+            mysql_connexion.release();
+            ssh.dispose();
 
             return {"stdout": command.stdout, "stderr": command.stderr};
-            
 
         } catch (error) {
             console.log(error);
         }
     }
 
-    
-    
 }
 

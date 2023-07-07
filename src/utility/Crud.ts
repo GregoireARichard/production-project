@@ -106,6 +106,9 @@ export class Crud {
     columns: string[]
   }): Promise<T> {
     const db = DB.Connection;
+    const query = `select ${options.columns.join(',')} from ${options.table} where ${options.idKey} = ?`
+    console.log(query);
+    
     const data = await db.query<T[] & RowDataPacket[]>(`select ${options.columns.join(',')} from ${options.table} where ${options.idKey} = ?`, [options.idValue]);      
 
     if (data[0].length > 0) {
