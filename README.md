@@ -9,6 +9,7 @@ Le projet est concu pour un VSCode Dev Container. Relancez le projet dans un Dev
 Avant de lancer le serveur il faut d'abord préparer la base de données :
 
 ```bash
+mycli -h dbms -u root < ./dbms/ddl/admin.sql
 mycli -h dbms -u root < ./dbms/ddl/ddl.prod.sql
 ```
 

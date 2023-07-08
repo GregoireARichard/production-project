@@ -21,9 +21,15 @@ CREATE TABLE IF NOT EXISTS `meta_user_info` (
   FOREIGN KEY (`id_user`) REFERENCES `user`(`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `exercise` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255)
+CREATE TABLE `exercise` (
+  `id` INT AUTO_INCREMENT,
+  `name` VARCHAR(255),
+  `description` TEXT,
+  `clue` VARCHAR(255),
+  `group_id` INT,
+  FOREIGN KEY (`group_id`) REFERENCES `exercise_group`(`id`),
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_name` (`name`)
 );
 
 CREATE TABLE IF NOT EXISTS `user_exercise` (
