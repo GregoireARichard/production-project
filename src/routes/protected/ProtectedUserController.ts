@@ -4,7 +4,6 @@ import { ICreateResponse } from '../../types/ICreateResponse';
 import { IIndexResponse } from '../../types/IIndexQuery';
 import { IUpdateResponse } from '../../types/IUpdateResponse';
 import { Crud } from '../../utility/Crud';
-;
 
 const READ_COLUMNS = ['id', 'email'];
 
