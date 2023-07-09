@@ -1,1 +1,1 @@
-export type DbTable = 'user' | 'meta_user_info' | 'exercise' | 'user_exercise';
+export type DbTable = 'user' | 'meta_user_info' | 'exercise' | 'user_exercise' | 'exercise_group | admin';
