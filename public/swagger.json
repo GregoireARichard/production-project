@@ -190,25 +190,15 @@
 				]
 			}
 		},
-		"/production/ssh": {
+		"/production/exercise": {
 			"post": {
-				"operationId": "ProdController_sshConnexion",
+				"operationId": "RunExercise",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {
-									"properties": {
-										"stderr": {},
-										"stdout": {}
-									},
-									"required": [
-										"stderr",
-										"stdout"
-									],
-									"type": "object"
-								}
+								"schema": {}
 							}
 						}
 					}

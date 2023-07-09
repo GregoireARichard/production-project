@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS production;
+
 
 USE production;
 
@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 CREATE TABLE IF NOT EXISTS `meta_user_info` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-
   `id_user` INT,
   `type` VARCHAR(50),
   `host` VARCHAR(255),
@@ -21,11 +20,21 @@ CREATE TABLE IF NOT EXISTS `meta_user_info` (
   FOREIGN KEY (`id_user`) REFERENCES `user`(`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `exercise_group` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `is_active` BOOLEAN,
+    `name` VARCHAR(255),
+    UNIQUE INDEX `unique_name` (`name`)
+);
+
 CREATE TABLE `exercise` (
   `id` INT AUTO_INCREMENT,
+  `question_number` INT,
   `name` VARCHAR(255),
   `description` TEXT,
   `clue` VARCHAR(255),
+  `command` TEXT DEFAULT NULL,
+  `query` TEXT DEFAULT NULL,
   `group_id` INT,
   FOREIGN KEY (`group_id`) REFERENCES `exercise_group`(`id`),
   PRIMARY KEY (`id`),

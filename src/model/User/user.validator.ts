@@ -4,8 +4,6 @@ import { IUserCreate, IUserUpdate } from "./IUser";
 const UserCreateSchema : JSONSchemaType<IUserCreate> = {
   type: "object",
   properties: {
-    familyName: { type: 'string', nullable: true },
-    givenName: { type: 'string', nullable: true},
     email: { type: 'string' },  
   },
   required: ["email"],
@@ -15,8 +13,6 @@ const UserCreateSchema : JSONSchemaType<IUserCreate> = {
 const UserUpdateSchema : JSONSchemaType<IUserUpdate> = {
   type: "object",
   properties: {
-    familyName: { type: 'string', nullable: true },
-    givenName: { type: 'string', nullable: true },
     email: { type: 'string', nullable: true },  
   },  
   additionalProperties: false,
