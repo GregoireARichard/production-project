@@ -11,6 +11,7 @@ import type { IDefaultExerciseResponse } from "../../types/IDefaultExerciseRespo
 import { IErrorExercise } from "../../types/IErrorExercise";
 import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
+import { IMetaUserInfoSGBDRCreate, IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
 
 
 const router = Router({ mergeParams: true });
@@ -90,7 +91,7 @@ export class ProductionExerciseController{
                 }
             }
 
-            const ssh_meta_result = await db.query<RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='ssh'`, [userId]);
+            const ssh_meta_result = await db.query<IMetaUserInfoSSHRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='ssh'`, [userId]);
 
             const ssh_meta = ssh_meta_result[0][0];
             
@@ -138,7 +139,7 @@ export class ProductionExerciseController{
             if(isMetaDb[0][0].nb_rows === 0 && body.name === "mysql")
             {
                 try {
-                    const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                    const data: IMetaUserInfoSGBDRCreate = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
@@ -146,7 +147,7 @@ export class ProductionExerciseController{
                 }
             }
 
-            const mysql_meta_result = await db.query<RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
+            const mysql_meta_result = await db.query<IMetaUserInfoSGBDRRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
 
             const mysql_meta = mysql_meta_result[0][0];
 
