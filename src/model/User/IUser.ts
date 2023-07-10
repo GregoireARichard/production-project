@@ -5,6 +5,7 @@
 export interface IUser {
   id: number;
   email: string;
+  fullname: string
 }
 
 // Outils de manipulation des types :

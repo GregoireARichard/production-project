@@ -57,11 +57,15 @@
 					},
 					"email": {
 						"type": "string"
+					},
+					"fullname": {
+						"type": "string"
 					}
 				},
 				"required": [
 					"id",
-					"email"
+					"email",
+					"fullname"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -113,10 +117,14 @@
 				"properties": {
 					"email": {
 						"type": "string"
+					},
+					"fullname": {
+						"type": "string"
 					}
 				},
 				"required": [
-					"email"
+					"email",
+					"fullname"
 				],
 				"type": "object",
 				"description": "From T, pick a set of properties whose keys are in the union K"
@@ -156,6 +164,9 @@
 			"Partial_IUserCreate_": {
 				"properties": {
 					"email": {
+						"type": "string"
+					},
+					"fullname": {
 						"type": "string"
 					}
 				},
