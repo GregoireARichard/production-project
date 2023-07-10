@@ -10,6 +10,7 @@ const MetaUserInfoSSHCreateSchema: JSONSchemaType<IMetaUserInfoSSHCreate> = {
     host: { type: "string" },
     port: { type: "number" },
     username: { type: "string" },
+    password: { type: "string" },
   },
   required: ["id_user", "type", "host", "username","port", "group_id"],
   additionalProperties: false,

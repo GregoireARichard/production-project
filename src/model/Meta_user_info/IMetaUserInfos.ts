@@ -7,6 +7,7 @@ export interface IMetaUserInfoSSH {
     host: string;
     port: number ;
     username: string;
+    password:string | null
   }
   export interface IMetaUserInfoSGBDR {
     id: number;
