@@ -10,7 +10,7 @@ const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where 
 export async function isGroupExerciseActive(groupId: number){
     const db = DB.Connection
     try {
-        const exercise: IExercise  = await getExercise(groupId)
+        const exercise: IExercise  = await getExercises(groupId)
         const exerciceData = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
         const isActiveBool: number = exerciceData[0][0].is_active
         const exerciseName = exerciceData[0][0].name
@@ -39,7 +39,7 @@ export async function isGroupExerciseActive(groupId: number){
 }
 
 const getExerciseQuery = "SELECT * FROM exercise WHERE group_id = ?"
-export async function getExercise(groupId: number): Promise<IExercise> {
+export async function getExercises(groupId: number): Promise<IExercise> {
     const db = DB.Connection;
     try {
       const getExercise = await db.query<RowDataPacket[]>(getExerciseQuery, groupId);

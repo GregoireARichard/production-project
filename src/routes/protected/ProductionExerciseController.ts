@@ -12,7 +12,7 @@ import { IErrorExercise } from "../../types/IErrorExercise";
 import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
 import { IExerciseBody } from "../../types/IExerciseBody";
-import { getExercise, isGroupExerciseActive } from "../../utility/repository";
+import { getExercises, isGroupExerciseActive } from "../../utility/repository";
 import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
