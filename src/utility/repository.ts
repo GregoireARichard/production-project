@@ -92,3 +92,14 @@ export async function getAdmin(email: string): Promise<string | undefined> {
     }
 
 }
+const getResultsQuery = "SELECT u.full_name, ue.points FROM user_exercise AS ue JOIN user AS u ON ue.id_user = u.id ORDER BY u.full_name ASC;"
+export async function getStudentsResults(): Promise<any> {
+    try {
+       const result = await db.query<RowDataPacket[]>(getResultsQuery)
+       
+       return result[0]
+    } catch (error) {
+        console.log("getStudentsResults: ", error)
+    }
+
+}

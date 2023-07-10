@@ -50,6 +50,23 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IStudentsResults": {
+				"properties": {
+					"full_name": {
+						"type": "string"
+					},
+					"points": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"full_name",
+					"points"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IExerciseBody": {
 				"properties": {
 					"name": {
@@ -101,11 +118,15 @@
 					},
 					"email": {
 						"type": "string"
+					},
+					"full_name": {
+						"type": "string"
 					}
 				},
 				"required": [
 					"id",
-					"email"
+					"email",
+					"full_name"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -157,10 +178,14 @@
 				"properties": {
 					"email": {
 						"type": "string"
+					},
+					"full_name": {
+						"type": "string"
 					}
 				},
 				"required": [
-					"email"
+					"email",
+					"full_name"
 				],
 				"type": "object",
 				"description": "From T, pick a set of properties whose keys are in the union K"
@@ -200,6 +225,9 @@
 			"Partial_IUserCreate_": {
 				"properties": {
 					"email": {
+						"type": "string"
+					},
+					"full_name": {
 						"type": "string"
 					}
 				},
@@ -330,6 +358,32 @@
 						}
 					}
 				}
+			}
+		},
+		"/admin/results": {
+			"get": {
+				"operationId": "GetStudentsResults",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IStudentsResults"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"JWTADMIN": []
+					}
+				],
+				"parameters": []
 			}
 		},
 		"/production/exercise": {

@@ -48,6 +48,15 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IStudentsResults": {
+        "dataType": "refObject",
+        "properties": {
+            "full_name": {"dataType":"string","required":true},
+            "points": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IExerciseBody": {
         "dataType": "refObject",
         "properties": {
@@ -63,6 +72,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "id": {"dataType":"double","required":true},
             "email": {"dataType":"string","required":true},
+            "full_name": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -88,7 +98,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_IUser.Exclude_keyofIUser.id__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"full_name":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_IUser.id_": {
@@ -112,7 +122,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_IUserCreate_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string"},"full_name":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUserUpdate": {
@@ -200,6 +210,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.changeExerciseGroupState.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/admin/results',
+            authenticateMiddleware([{"JWTADMIN":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController)),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController.prototype.GetStudentsResults)),
+
+            function adminManagementController_GetStudentsResults(request: any, response: any, next: any) {
+            const args = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new adminManagementController();
+
+
+              const promise = controller.GetStudentsResults.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
