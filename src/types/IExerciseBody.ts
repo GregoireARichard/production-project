@@ -4,7 +4,7 @@ export interface IExerciseBody {
     test: {
         host: string,
         username: string,
-        password: string | undefined,
+        password: string | null,
         port: number
     }
 }

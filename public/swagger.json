@@ -22,7 +22,8 @@
 								"format": "double"
 							},
 							"password": {
-								"type": "string"
+								"type": "string",
+								"nullable": true
 							},
 							"username": {
 								"type": "string"
@@ -33,6 +34,7 @@
 						},
 						"required": [
 							"port",
+							"password",
 							"username",
 							"host"
 						],
