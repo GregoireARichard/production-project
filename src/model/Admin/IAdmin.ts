@@ -5,7 +5,3 @@ export interface IAdmin {
   }
 
 export type IAdminRO = Readonly<IAdmin>;
-
-// export type IAdminCreate = Omit<IAdmin, 'id'>;
-
-// export type IAdminUpdate = Partial<IAdminCreate>;

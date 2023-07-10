@@ -13,4 +13,3 @@ export interface IExercise {
   
   export type IExerciseCreate = Omit<IExercise, 'id'>;
   
-//   export type IExerciseUpdate = Partial<IExerciseCreate>;
