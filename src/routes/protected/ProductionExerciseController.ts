@@ -16,7 +16,7 @@ import { getExercises, isGroupExerciseActive } from "../../utility/repository";
 import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
-import { IMetaUserInfoSGBDRCreate, IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
+import { IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
 
 
 const router = Router({ mergeParams: true });
@@ -90,7 +90,7 @@ export class ProductionExerciseController{
             if(isMetaSSH[0][0].nb_rows === 0)
             {
                 try {
-                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
@@ -146,7 +146,7 @@ export class ProductionExerciseController{
             if(isMetaDb[0][0].nb_rows === 0 && body.name === "mysql")
             {
                 try {
-                    const data: IMetaUserInfoSGBDRCreate = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);

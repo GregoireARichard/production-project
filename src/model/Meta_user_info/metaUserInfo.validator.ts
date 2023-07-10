@@ -5,13 +5,13 @@ const MetaUserInfoSSHCreateSchema: JSONSchemaType<IMetaUserInfoSSHCreate> = {
   type: "object",
   properties: {
     id_user: { type: "number" },
+    group_id: { type: "number" },
     type: { type: "string" },
     host: { type: "string" },
     port: { type: "number" },
     username: { type: "string" },
-    password: {type: "string", default: null}
   },
-  required: ["id_user", "type", "host", "username","port"],
+  required: ["id_user", "type", "host", "username","port", "group_id"],
   additionalProperties: false,
 };
 
@@ -19,13 +19,14 @@ const MetaUserInfoSGBDRCreateSchema: JSONSchemaType<IMetaUserInfoSGBDRCreate> = 
     type: "object",
     properties: {
       id_user: { type: "number" },
+      group_id: { type: "number" },
       type: { type: "string" },
       host: { type: "string" },
       port: { type: "number" },
       username: { type: "string" },
       password: { type: "string" },
     },
-    required: ["id_user", "type", "host", "username","port", "password"],
+    required: ["id_user", "type", "host", "username","port", "password","group_id"],
     additionalProperties: false,
   };
 
