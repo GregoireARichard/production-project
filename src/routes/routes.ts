@@ -23,7 +23,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "name": {"dataType":"string","required":true},
             "group_id": {"dataType":"double","required":true},
-            "test": {"dataType":"nestedObjectLiteral","nestedProperties":{"port":{"dataType":"double","required":true},"password":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}],"required":true},"username":{"dataType":"string","required":true},"host":{"dataType":"string","required":true}},"required":true},
+            "test": {"dataType":"nestedObjectLiteral","nestedProperties":{"port":{"dataType":"double","required":true},"password":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"username":{"dataType":"string","required":true},"host":{"dataType":"string","required":true}},"required":true},
         },
         "additionalProperties": false,
     },
