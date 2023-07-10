@@ -12,6 +12,7 @@ import { IErrorExercise } from "../../types/IErrorExercise";
 import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
 import { IExerciseBody } from "../../types/IExerciseBody";
+import { IExerciseFullBody } from "../../types/IExerciseFullBody";
 import { getExercises, isGroupExerciseActive } from "../../utility/repository";
 import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
@@ -26,29 +27,38 @@ const router = Router({ mergeParams: true });
 export class ProductionExerciseController{
 
     @Post("/exercise")
-    public async runExercise(@Body() body: IExerciseBody, @Request() request: any) 
+    public async runExercise(@Body() body: any, @Request() request: any) 
     {
         const isExerciceActive = await isGroupExerciseActive(body.group_id)
-        if (isExerciceActive != null) return isExerciceActive
+        if (typeof isExerciceActive !== "boolean") return isExerciceActive
+
         try {
             const { userId } =  request.user;
 
-            const ssh =  await this.GetSSHConnexion(userId, body);
+            const ssh =  await this.GetSSHConnexion(userId, body as IExerciseFullBody);
             
-
-            if (!(ssh instanceof NodeSSH)) {
+            if ('error' in ssh) {
                 return ssh;
             }
             // On insère en DB Test réussi
 
-            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body);
+            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body as IExerciseFullBody);
 
             if ('error' in mysql_connexion) {
                 return mysql_connexion;
             }
             // On insère en DB Test réussi
               
+            const exercises = await getExercises(body.group_id);
 
+            console.log(exercises);
+            
+            
+            // exercises.forEach((exercise: IExercise) => {
+            //     console.log(exercise);
+                
+            // })
+            
             /** On va chercher tous nos tests en DB */
             /** On boucle sur nos tests en fonction de query ou command === false */
             const result_query = await mysql_connexion.query("SHOW TABLES;");
@@ -62,7 +72,6 @@ export class ProductionExerciseController{
             ssh.dispose();
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                false,
                 false,
                 "Fini",
                 "Exercise Description",
@@ -81,7 +90,7 @@ export class ProductionExerciseController{
         }
     }
 
-    private async GetSSHConnexion(userId: number, body: IExerciseBody): Promise<NodeSSH | IDefaultExerciseResponse>
+    private async GetSSHConnexion(userId: number, body: IExerciseFullBody): Promise<NodeSSH | IDefaultExerciseResponse>
     {
         try {
             const db = DB.Connection;
@@ -90,7 +99,15 @@ export class ProductionExerciseController{
             if(isMetaSSH[0][0].nb_rows === 0)
             {
                 try {
-                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                    await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                } catch (error) {
+                    console.log("error:", error);
+                    throw new Error("missing informations");
+                }
+            }else if (body.name === "ssh"){
+                try {
+                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
@@ -122,7 +139,6 @@ export class ProductionExerciseController{
             };
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                false,
                 error,
                 "SSH", //Requête SQL
                 "Merci de me donner l'accès à votre serveur avec la clé suivante et de me fournir les informations de connexion associé:<br><code>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRFaGoDfJYqNHC3Qx1bfTp7D9Uvy42D+VRIneJ7npz47AvVt1ReEUVyKDDxBpIMIOw9LLbzO/2AH3r9TI8wAS0p/kjdkduZVGfjwS3QXNA5bd6VZ0SqV3f23DGSr7b+GnZGSn6TpNvnccv8I6orlz/FqFi/FaHmqPik6/txWxcUyZKN5hMYn4+F4s0aYVfoaTyjJyeEMUSrIQxhqjodRmLdb00mBR/DjXV3V2MmOb12XwpQl8rRbN9xKxSaAQHZd2Kqn0ALFRBBiM6bugzFgwqg2yvNoG2TmPFvwHNSTSYhrhcnujJ93EN3T3kZ0M3dSUtgDm+LZRWgUbWxbkxqipdqET7dRPYlrz9juV4GhWpv4TNcdyjkOKH5hqX+uZMeWFM9QIbjWK8DcExNqYiu5rnGGm2DFXQxVp03yfs2jU9M7/aF4zq9tB8LGjrUCvfGFlU07YAldCthPxVMb3C+icJ3bXvajKK3Z+fIimW5tSLtTLU6drZQXYT7cvVZ5rZ21QvxzF7HX8amcmOKqMi/MiUJukEzd3we/yeIpHRzrA3ApBeTheqeT8riDDfktB0g6djpbYKSHBMi0h62sDnEeldx0+gJkUP5cwKYffQnMm4f9m1F6IuNfNHg34F95XJNQHRfhLvwdgCSzI8nBIsPpjgrZrYpORoTKeSTht+Tf17kw==</code>", //Requête SQL
@@ -136,21 +152,29 @@ export class ProductionExerciseController{
         }
     }
 
-    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseBody): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
+    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
     {
         try {
             const db = DB.Connection;
 
             const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
             
-            if(isMetaDb[0][0].nb_rows === 0 && body.name === "mysql")
+            if(isMetaDb[0][0].nb_rows === 0 && body.name === "sgbdr")
             {
                 try {
-                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                    const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
                     throw new Error("probably missing informations");
+                }
+            }else if (body.name === "sgbdr"){
+                try {
+                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                    await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                } catch (error) {
+                    console.log("error:", error);
+                    throw new Error("missing informations");
                 }
             }
 
@@ -192,7 +216,6 @@ export class ProductionExerciseController{
             };
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                false,
                 error,
                 "SGBDR", //Requête SQL
                 "La connexion à la base donnée 'rgpd' à échoué sur votre serveur", //Requête SQL
@@ -224,7 +247,6 @@ export class ProductionExerciseController{
     }
 
     private ExerciseResponse(
-        next: boolean,
         error: IErrorExercise | false,
         name: string,
         description: string,
@@ -235,7 +257,6 @@ export class ProductionExerciseController{
       ): IDefaultExerciseResponse {
 
         const response: IDefaultExerciseResponse = {
-          next: next,
           error: error,
           name: name,
           description: description,

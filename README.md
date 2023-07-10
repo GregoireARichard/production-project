@@ -46,6 +46,7 @@ Body 1:
 ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas correctement chez vous :)
 {
     "name": "ssh",
+    "group_id": 1,
     "test":{
         "host": "193.70.84.157",
         "username": "ubuntu",
@@ -56,7 +57,8 @@ ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas co
 Body 2: 
 
 {
-    "name": "mysql",
+    "name": "sgbdr",
+    "group_id": 1,
     "test":{
         "host": "127.0.0.1",
         "username": "root",

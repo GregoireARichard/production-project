@@ -1,7 +1,6 @@
 import { IErrorExercise } from "./IErrorExercise";
 
 export interface IDefaultExerciseResponse {
-    next: boolean,
     error: IErrorExercise | false,
     name: string,
     description: string,
