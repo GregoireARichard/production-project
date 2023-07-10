@@ -5,17 +5,17 @@ import { IDefaultExerciseResponse } from "../types/IDefaultExerciseResponse";
 import { IExerciseBody } from "../types/IExerciseBody";
 import { IExercise } from "../types/IExercise";
 import { IErrorExercise } from "../types/IErrorExercise";
+import { IExerciseRO } from "../model/Exercise/IExercise";
 
 const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where id = ?"
 const getExerciseQuery = "SELECT * FROM exercise WHERE group_id = ?"
 
 
-export async function isGroupExerciseActive(groupId: number) {
+export async function isGroupExerciseActive(groupId: number): Promise< boolean|IDefaultExerciseResponse > {
     try {
         const db = DB.Connection
         const exerciceData = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
         const isActiveBool: number = exerciceData[0][0].is_active
-        const exerciseName = exerciceData[0][0].name
 
         if( isActiveBool === 0) {
             throw new Error("Exercice arrêté par l'administrateur");
@@ -47,12 +47,12 @@ export async function isGroupExerciseActive(groupId: number) {
 }
 
 
-export async function getExercises(groupId: number): Promise<RowDataPacket[]> {
+export async function getExercises(groupId: number): Promise<IExerciseRO[]> {
     try {
       const db = DB.Connection;
       const getExercise = await db.query<RowDataPacket[]>(getExerciseQuery, groupId);
-
-      return getExercise[0];
+      
+      return getExercise[0] as any;
 
     } catch (error) {
       console.log("getExercise:", error);

@@ -18,6 +18,7 @@ import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
 import { IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
+import { IExerciseRO } from "../../model/Exercise/IExercise";
 
 
 const router = Router({ mergeParams: true });
@@ -25,6 +26,8 @@ const router = Router({ mergeParams: true });
 @Route("/production")
 @Security('jwt')
 export class ProductionExerciseController{
+
+    private static readonly SSH_COMMAND_TIMEOUT = 10000;
 
     @Post("/exercise")
     public async runExercise(@Body() body: any, @Request() request: any) 
@@ -47,35 +50,75 @@ export class ProductionExerciseController{
             if ('error' in mysql_connexion) {
                 return mysql_connexion;
             }
-            // On insère en DB Test réussi
+            // On UPDATE en DB Test réussi
               
-            const exercises = await getExercises(body.group_id);
+            const NextExercises = await getExercises(body.group_id);
+            
+            for (const exercise of NextExercises) {
+                let potentialResponse = await this.prepareExerciseResponse(exercise);
+                console.log("toto", exercise);
+                if (exercise.command) {
+                    console.log("tata");
+                  try {
+                    let command_test = await this.executeExerciseCommand(ssh, "i=0; while true; do ((i++)); sleep 1; done", potentialResponse);
+                    console.log("Ma commande en carton pate", command_test);
+                    
+                    if (typeof command_test === 'object' && 'error' in command_test) return command_test;
+                  } catch (err: any) {
+                    console.log("Command execution error:", err);
+                    const error: IErrorExercise = {
+                        title: "Command Error",
+                        message: err.message || "SSH Command Error",
+                        status_code: 500
+                    };
+        
+                    potentialResponse.error = error;
+                    return potentialResponse;
+                  }
+                }
+          
+                if (exercise.query) {
+                  try {
+                    let query_test = await this.executeExerciseQuery(mysql_connexion, "SELECT 2+2;", potentialResponse);
+                    if ('error' in query_test) return query_test;
+                  } catch (err: any) {
+                    console.log("Query execution error:", err);
 
-            console.log(exercises);
-            
-            
-            // exercises.forEach((exercise: IExercise) => {
-            //     console.log(exercise);
-                
-            // })
+                    const error: IErrorExercise = {
+                        title: "Query Error",
+                        message: err.message || "SQL Query Error",
+                        status_code: 500
+                    };
+        
+                    potentialResponse.error = error;
+                    return potentialResponse;
+                  }
+                }
+          
+                // On UPDATE en DB Test réussi
+              }
+          
+              mysql_connexion.release();
+              ssh.dispose();
             
             /** On va chercher tous nos tests en DB */
             /** On boucle sur nos tests en fonction de query ou command === false */
-            const result_query = await mysql_connexion.query("SHOW TABLES;");
+
             
-            const command = await ssh.execCommand("ls -l");
+            //const command = await ssh.execCommand("ls -l");
+            
+            
             /** On valide les tests qui reviennent true, si la réponse qui revient contient error on retourne la réponse */
 
             /** Si tous les tests sont passés, les exercises sont fini, on retourne la réponse standard au front avec next et error à false */
             
-            mysql_connexion.release();
-            ssh.dispose();
+
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
                 false,
                 "Fini",
-                "Exercise Description",
-                "Exercise Clue",
+                "",
+                "",
                 20,
                 0,
                 20
@@ -88,6 +131,21 @@ export class ProductionExerciseController{
         } catch (error) {
             console.log("error:", error);
         }
+    }
+
+    private async prepareExerciseResponse(exercice: IExerciseRO)
+    { 
+        const potentialResponse: IDefaultExerciseResponse = this.ExerciseResponse(
+            false,
+            exercice.name,
+            exercice.description,
+            exercice.clue,
+            0, //Requête SQL
+            5, //Requête SQL
+            20 //Requête SQL
+        );
+
+        return potentialResponse
     }
 
     private async GetSSHConnexion(userId: number, body: IExerciseFullBody): Promise<NodeSSH | IDefaultExerciseResponse>
@@ -107,8 +165,8 @@ export class ProductionExerciseController{
                 }
             }else if (body.name === "ssh"){
                 try {
-                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
-                    await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                    const data = {host: body.test.host, username: body.test.username,port: body.test?.port || 22 };
+                    await db.query<RowDataPacket[]>(`UPDATE meta_user_info SET ? WHERE id_user = ? AND type = 'ssh'`, [data, userId]);
                 } catch (error) {
                     console.log("error:", error);
                     throw new Error("missing informations");
@@ -157,12 +215,12 @@ export class ProductionExerciseController{
         try {
             const db = DB.Connection;
 
-            const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
+            const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='sgbdr'`, [userId]);
             
             if(isMetaDb[0][0].nb_rows === 0 && body.name === "sgbdr")
             {
                 try {
-                    const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                    const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306 }
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
@@ -170,16 +228,16 @@ export class ProductionExerciseController{
                 }
             }else if (body.name === "sgbdr"){
                 try {
-                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
-                    await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                    const data = {host: body.test.host, username: body.test.username, password: body.test.password, port: body.test?.port || 3306 };
+                    await db.query<RowDataPacket[]>(`UPDATE meta_user_info SET ? WHERE id_user = ? AND type = 'sgbdr'`, [data, userId]);
                 } catch (error) {
                     console.log("error:", error);
                     throw new Error("missing informations");
                 }
             }
 
-            const mysql_meta_result = await db.query<IMetaUserInfoSGBDRRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
-
+            const mysql_meta_result = await db.query<IMetaUserInfoSGBDRRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='sgbdr'`, [userId]);
+            
             const mysql_meta = mysql_meta_result[0][0];
 
             const sshTunnel = await SSH.SSHTunnel(
@@ -229,21 +287,68 @@ export class ProductionExerciseController{
         }
     }
 
-    private async executeExerciseCommand(ssh: any, name: any, command: any)
+    private async executeCommandWithTimeout(ssh: NodeSSH, command: string, timeout: number): Promise<string> {
+        return new Promise((resolve, reject) => {
+          const commandTimeout = setTimeout(() => {
+            reject(new Error("Command execution timed out"));
+          }, timeout);
+    
+          ssh.execCommand(command)
+            .then(result => {
+              clearTimeout(commandTimeout);
+              if(result.stderr.length > 0)
+              {
+                reject(new Error(result.stderr))
+              }
+              resolve(result.stdout);
+            })
+            .catch(error => {
+              clearTimeout(commandTimeout);
+              reject(error);
+            });
+        });
+      }
+
+    private async executeExerciseCommand(ssh: any, command: any, exerciseResponse: IDefaultExerciseResponse): Promise<string|IDefaultExerciseResponse>
     {
-        // On execute notre command
+        try {
+            const command_test = await this.executeCommandWithTimeout(ssh, command, ProductionExerciseController.SSH_COMMAND_TIMEOUT);
+            console.log(command_test);
+            
+            return command_test;
+
+          } catch (err: any) {
+
+            const error: IErrorExercise = {
+                title: "SSH Error",
+                message: err.message || "SSH Connexion Failed with Timeout",
+                status_code: 500
+            };
+
+            exerciseResponse.error = error;
+
+            return exerciseResponse;
+          }
     }
 
-    private async executeExerciseQuery(mysql_connexion: any, name: any, query: any)
+    private async executeExerciseQuery(mysql_connexion: any, query: any, exerciseResponse: IDefaultExerciseResponse)
     {
-        // On execute notre Query
-    }
+        try {
+            const query_test = await mysql_connexion.query(query);
 
-    private async setExerciseResponse(name: string, )
-    {
-        const db = DB.Connection;
+            return query_test;
+          } catch (err: any) {
 
-        // On fait une requête standard pour setNotreReponse
+            const error: IErrorExercise = {
+                title: "mysql/connexion failed",
+                message: err.message || "La requête SQL à échoué pour une raison inconnu",
+                status_code: 500
+            };
+
+            exerciseResponse.error = error;
+
+            return exerciseResponse;
+          }
     }
 
     private ExerciseResponse(
