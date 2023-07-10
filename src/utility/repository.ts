@@ -6,13 +6,14 @@ import { IExerciseBody } from "../types/IExerciseBody";
 import { IExercise } from "../types/IExercise";
 
 
-const isExerciseActiveQuery = "SELECT eg.is_active FROM exercise e JOIN exercise_group eg ON e.group_id = eg.id WHERE e.group_id = ?"
+const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where id = ?"
 export async function isGroupExerciseActive(groupId: number){
     const db = DB.Connection
     try {
         const exercise: IExercise  = await getExercise(groupId)
-        const isExerciceActive = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
-        const isActiveBool: number = isExerciceActive[0][0].is_active
+        const exerciceData = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
+        const isActiveBool: number = exerciceData[0][0].is_active
+        const exerciseName = exerciceData[0][0].name
         if( isActiveBool === 0){
             const response: IDefaultExerciseResponse = {
                 next: false,
@@ -21,9 +22,9 @@ export async function isGroupExerciseActive(groupId: number){
                     message: 'Exercise turned off by admin',
                     status_code: 401
                 },
-                name: exercise.name,
-                description: exercise.description,
-                clue: exercise.clue,
+                name: exerciseName,
+                description: "Exercice arrêté par l'administrateur",
+                clue: "",
                 user_points: 0,
                 exercise_points: 0,
                 total_point: 0
