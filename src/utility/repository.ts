@@ -4,17 +4,21 @@ import IIsGroupExerciseActive from "../types/IIsGroupExerciseActive";
 import { IDefaultExerciseResponse } from "../types/IDefaultExerciseResponse";
 import { IExerciseBody } from "../types/IExerciseBody";
 import { IExercise } from "../types/IExercise";
+import { IAdminConnectionRequest } from "../types/IAdminConnectionRequest";
+import bcrypt from "bcrypt";
+import { IChangeExerciseGroupStateRequest } from "../types/IChangeExerciseGroupStateRequest";
 
 
+const db = DB.Connection;
 const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where id = ?"
 export async function isGroupExerciseActive(groupId: number){
-    const db = DB.Connection
+
     try {
         const exercise: IExercise  = await getExercises(groupId)
         const exerciceData = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
         const isActiveBool: number = exerciceData[0][0].is_active
         const exerciseName = exerciceData[0][0].name
-        if( isActiveBool === 0){
+        if(isActiveBool === 0){
             const response: IDefaultExerciseResponse = {
                 next: false,
                 error: {
@@ -40,7 +44,6 @@ export async function isGroupExerciseActive(groupId: number){
 
 const getExerciseQuery = "SELECT * FROM exercise WHERE group_id = ?"
 export async function getExercises(groupId: number): Promise<IExercise> {
-    const db = DB.Connection;
     try {
       const getExercise = await db.query<RowDataPacket[]>(getExerciseQuery, groupId);
       const exercise = getExercise[0][0] as IExercise | undefined;
@@ -50,7 +53,42 @@ export async function getExercises(groupId: number): Promise<IExercise> {
         throw new Error("Exercise not found");
       }
     } catch (error) {
-      console.log("getExercise:", error);
+      console.log("getExercise: ", error);
       throw error;
     }
   }
+const checkIfAdminAccountIsValidQuery = "SELECT email, password from admin limit 1;"
+export async function checkIfAdminAccountIsValid(body: IAdminConnectionRequest): Promise<Boolean>{
+    try {
+        const getAdminDetails:any = await db.query<RowDataPacket[]>(checkIfAdminAccountIsValidQuery)
+        const email = getAdminDetails[0][0].email
+        const password = getAdminDetails[0][0].password
+        const validPassword = await bcrypt.compare(body.password, password);
+        if(body.email === email && validPassword){
+            return true
+        }
+    } catch (error) {
+        console.log("checkIfAdminAccountIsValid: ", error)
+    }
+    return false
+}
+
+export async function changeExerciseGroupStateRepository(body: IChangeExerciseGroupStateRequest): Promise<void>{
+    const changeExerciseGroupStateQuery = `UPDATE exercise_group SET is_active= ${body.state} where name = '${body.name}'`
+    try {
+        await db.query<RowDataPacket[]>(changeExerciseGroupStateQuery)
+    } catch (error) {
+        console.log("changeExerciseGroupState: ", error)
+    }
+}
+
+const getAdminQuery = "SELECT id FROM admin where email = ?"
+export async function getAdmin(email: string): Promise<string | undefined> {
+    try {
+       const admin = await db.query<RowDataPacket[]>(getAdminQuery, email)
+       return admin[0][0].id
+    } catch (error) {
+        console.log("getAdmin: ", error)
+    }
+
+}
