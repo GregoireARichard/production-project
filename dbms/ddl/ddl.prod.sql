@@ -5,7 +5,7 @@ USE production;
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `email` VARCHAR(255),
-  'fullname' VARCHAR(255),
+  `full_name` VARCHAR(255),
 
   UNIQUE INDEX `unique_email` (`email`)
 );
