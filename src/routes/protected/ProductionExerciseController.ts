@@ -11,6 +11,11 @@ import type { IDefaultExerciseResponse } from "../../types/IDefaultExerciseRespo
 import { IErrorExercise } from "../../types/IErrorExercise";
 import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
+import { IExerciseBody } from "../../types/IExerciseBody";
+import { getExercises, isGroupExerciseActive } from "../../utility/repository";
+import { IExercise } from "../../types/IExercise";
+import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
+import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
 
 
 const router = Router({ mergeParams: true });
@@ -20,8 +25,10 @@ const router = Router({ mergeParams: true });
 export class ProductionExerciseController{
 
     @Post("/exercise")
-    public async runExercise(@Body() body: any, @Request() request: any)
+    public async runExercise(@Body() body: IExerciseBody, @Request() request: any) 
     {
+        const isExerciceActive = await isGroupExerciseActive(body.group_id)
+        if (isExerciceActive != null) return isExerciceActive
         try {
             const { userId } =  request.user;
 
@@ -86,7 +93,7 @@ export class ProductionExerciseController{
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
-                    throw new Error("probably missing informations");
+                    throw new Error("missing informations");
                 }
             }
 
