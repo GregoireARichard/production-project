@@ -96,7 +96,6 @@ const getResultsQuery = "SELECT u.full_name, ue.points FROM user_exercise AS ue 
 export async function getStudentsResults(): Promise<any> {
     try {
        const result = await db.query<RowDataPacket[]>(getResultsQuery)
-       console.log(result[0]);
        
        return result[0]
     } catch (error) {
