@@ -39,6 +39,36 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IExercisesGroup": {
+        "dataType": "refObject",
+        "properties": {
+            "is_active": {"dataType":"boolean","required":true},
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ErrorCode": {
+        "dataType": "refEnum",
+        "enums": [404,403,400,410,429,500],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StructuredErrors": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["sql/failed"]},{"dataType":"enum","enums":["sql/not-found"]},{"dataType":"enum","enums":["validation/failed"]},{"dataType":"enum","enums":["auth/missing-email"]},{"dataType":"enum","enums":["auth/unknown-email"]},{"dataType":"enum","enums":["auth/missing-magic-link-token"]},{"dataType":"enum","enums":["auth/invalid-magic-link-token"]},{"dataType":"enum","enums":["auth/missing-header"]},{"dataType":"enum","enums":["auth/access-token-expired"]},{"dataType":"enum","enums":["auth/invalid-access-token"]},{"dataType":"enum","enums":["user/register/user-already-exists"]},{"dataType":"enum","enums":["ssh/connexion failed"]},{"dataType":"enum","enums":["mysql/connexion failed"]},{"dataType":"enum","enums":["internal/unknown"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiError": {
+        "dataType": "refObject",
+        "properties": {
+            "httpCode": {"ref":"ErrorCode","required":true},
+            "structuredError": {"ref":"StructuredErrors","required":true},
+            "errMessage": {"dataType":"string","required":true},
+            "errDetails": {"dataType":"any"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IChangeExerciseGroupStateRequest": {
         "dataType": "refObject",
         "properties": {
@@ -174,6 +204,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.loginAdmin.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/admin/exercise_list',
+            authenticateMiddleware([{"JWTADMIN":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController)),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController.prototype.getAllExercises)),
+
+            function adminManagementController_getAllExercises(request: any, response: any, next: any) {
+            const args = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new adminManagementController();
+
+
+              const promise = controller.getAllExercises.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
