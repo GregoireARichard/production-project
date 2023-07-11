@@ -9,6 +9,6 @@ FROM node:18-alpine AS api
 WORKDIR app
 COPY --from=api-builder /app/build ./build
 COPY package* ./
-COPY secrets/signing /app/build/secrets/signing
+COPY secrets/signing /app/secrets/signing
 RUN npm install --omit=dev
 CMD npm run start-api
