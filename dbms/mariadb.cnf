@@ -25,7 +25,7 @@
 socket = /run/mysqld/mysqld.sock
 
 # Import all .cnf files from configuration directory
-[mariadb]
+[mariadbd]
 skip-host-cache
 skip-name-resolve
 max_connections=1000
