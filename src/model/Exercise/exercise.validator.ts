@@ -4,13 +4,15 @@ import { IExerciseCreate } from "./IExercise";
 const ExerciseCreateSchema: JSONSchemaType<IExerciseCreate> = {
   type: "object",
   properties: {
-    question_number: { type: "number",  },
+    question_number: { type: "number" },
     name: { type: "string" },
-    description: { type: "string",  },
-    clue: { type: "string",  },
-    command: { type: "string",  },
-    query: { type: "string",  },
-    group_id: { type: "number",  },
+    description: { type: "string" },
+    clue: { type: "string" },
+    command: { type: "string" },
+    query: { type: "string" },
+    group_id: { type: "number" },
+    expected: { type: "string" },
+    points: { type: "number" }
   },
   required: [],
   additionalProperties: false,
