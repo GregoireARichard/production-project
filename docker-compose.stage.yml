@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  api:
+  production:
     build: 
       context: ./
       dockerfile: ./docker/Dockerfile.stage
@@ -10,7 +10,16 @@ services:
       - "5050:5050"
     environment:
       - NODE_ENV=prod
-      - PORT=8080      
+      - MJ_EMAIL_FROM=gregoire.richard@hetic.net
+      - MJ_EMAIL_NAME=Grégoire
+      - MJ_APIKEY=6c3753626d9281a7710a60e0f93ed0d7
+      - MJ_APISECRET=b58128225c25dbdd4fb75c08fb8e6e3d
+      - FRONT_URL=https://main--classy-creponne-0128f0.netlify.app/
+      - PORT=5050
+      - DB_HOST=dbms
+      - DB_USER=produsr
+      - DB_DATABASE=production
+      - DB_PASSWORD=prodpswd
     networks:
       - api-network
     restart: always
@@ -28,6 +37,10 @@ services:
     environment: 
       - MYSQL_ALLOW_EMPTY_PASSWORD=false
       - MYSQL_ROOT_PASSWORD=M)8*=y2;WUD9sQ-&
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+    ]
     volumes:
       - ./dbms/dbms-data:/var/lib/mysql
       - ./dbms/mariadb.cnf:/etc/mysql/mariadb.cnf
