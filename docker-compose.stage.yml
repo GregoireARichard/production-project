@@ -14,7 +14,7 @@ services:
       - MJ_EMAIL_NAME=Grégoire
       - MJ_APIKEY=6c3753626d9281a7710a60e0f93ed0d7
       - MJ_APISECRET=b58128225c25dbdd4fb75c08fb8e6e3d
-      - FRONT_URL=https://main--classy-creponne-0128f0.netlify.app/
+      - FRONT_URL=https://main--classy-creponne-0128f0.netlify.app
       - PORT=5050
       - DB_HOST=dbms
       - DB_USER=produsr
