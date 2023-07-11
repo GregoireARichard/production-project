@@ -1,4 +1,5 @@
 import { IErrorExercise } from "./IErrorExercise";
+import { IPreviousExercises } from "./IPreviousExercises";
 
 export interface IDefaultExerciseResponse {
     error: IErrorExercise | false,
@@ -8,4 +9,5 @@ export interface IDefaultExerciseResponse {
     user_points: number,
     exercise_points: number,
     total_point: number
+    passed: IPreviousExercises | false
 }

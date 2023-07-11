@@ -19,6 +19,7 @@ import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
 import { IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
 import { IExerciseRO } from "../../model/Exercise/IExercise";
+import { IPreviousExercises } from "../../types/IPreviousExercises";
 
 
 const router = Router({ mergeParams: true });
@@ -38,6 +39,8 @@ export class ProductionExerciseController{
         try {
             const { userId } =  request.user;
 
+            const AllExercises = await getExercises(body.group_id);
+
             const ssh =  await this.GetSSHConnexion(userId, body as IExerciseFullBody);
             
             if ('error' in ssh) {
@@ -45,27 +48,26 @@ export class ProductionExerciseController{
             }
             // On insère en DB Test réussi
 
-            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body as IExerciseFullBody);
+            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body as IExerciseFullBody, AllExercises);
 
             if ('error' in mysql_connexion) {
                 return mysql_connexion;
             }
             // On UPDATE en DB Test réussi
               
-            const NextExercises = await getExercises(body.group_id);
+
+
+            //Test boucle infini: i=0; while true; do ((i++)); sleep 1; done
             
-            for (const exercise of NextExercises) {
-                let potentialResponse = await this.prepareExerciseResponse(exercise);
-                console.log("toto", exercise);
+            for (const exercise of AllExercises) {
+                let potentialResponse = await this.prepareExerciseResponse(exercise, this.getPreviousExercises(AllExercises, exercise.question_number));
+
                 if (exercise.command) {
-                    console.log("tata");
                   try {
-                    let command_test = await this.executeExerciseCommand(ssh, "i=0; while true; do ((i++)); sleep 1; done", potentialResponse);
-                    console.log("Ma commande en carton pate", command_test);
+                    let command_test = await this.executeExerciseCommand(ssh, exercise.command, potentialResponse);
                     
                     if (typeof command_test === 'object' && 'error' in command_test) return command_test;
                   } catch (err: any) {
-                    console.log("Command execution error:", err);
                     const error: IErrorExercise = {
                         title: "Command Error",
                         message: err.message || "SSH Command Error",
@@ -79,17 +81,16 @@ export class ProductionExerciseController{
           
                 if (exercise.query) {
                   try {
-                    let query_test = await this.executeExerciseQuery(mysql_connexion, "SELECT 2+2;", potentialResponse);
+                    let query_test = await this.executeExerciseQuery(mysql_connexion, exercise.query, potentialResponse);
                     if ('error' in query_test) return query_test;
                   } catch (err: any) {
-                    console.log("Query execution error:", err);
 
                     const error: IErrorExercise = {
                         title: "Query Error",
                         message: err.message || "SQL Query Error",
                         status_code: 500
                     };
-        
+                    
                     potentialResponse.error = error;
                     return potentialResponse;
                   }
@@ -121,7 +122,8 @@ export class ProductionExerciseController{
                 "",
                 20,
                 0,
-                20
+                20,
+                this.getPreviousExercises(AllExercises, AllExercises.length)
             );
 
             // On insère en DB Test Terminé
@@ -133,7 +135,16 @@ export class ProductionExerciseController{
         }
     }
 
-    private async prepareExerciseResponse(exercice: IExerciseRO)
+    private getPreviousExercises(AllExercises: IExerciseRO[], index: number): IPreviousExercises
+    {
+        const passedExercises =  AllExercises
+                                .slice(0, index-1)
+                                .map(({ id, command, query, expected, ...exercise }) => exercise);
+
+        return { exercises: passedExercises };
+    }
+
+    private async prepareExerciseResponse(exercice: IExerciseRO, exercisesPassed: IPreviousExercises): Promise<IDefaultExerciseResponse>
     { 
         const potentialResponse: IDefaultExerciseResponse = this.ExerciseResponse(
             false,
@@ -142,7 +153,8 @@ export class ProductionExerciseController{
             exercice.clue,
             0, //Requête SQL
             5, //Requête SQL
-            20 //Requête SQL
+            20, //Requête SQL
+            exercisesPassed
         );
 
         return potentialResponse
@@ -203,14 +215,15 @@ export class ProductionExerciseController{
                 "Le fichier où doit être copié la clé publique est le suivant: <code>/home/<votre_utilisateur>/.ssh/authorized_keys</code>", //Requête SQL
                 0, //Requête SQL
                 5, //Requête SQL
-                20 //Requête SQL
+                20, //Requête SQL
+                false
             );
 
             return exerciseResponse
         }
     }
 
-    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
+    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody, AllExercises: IExerciseRO[]): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
     {
         try {
             const db = DB.Connection;
@@ -273,6 +286,8 @@ export class ProductionExerciseController{
                 status_code: 500
             };
 
+            const exercises = this.getPreviousExercises(AllExercises, 2)
+
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
                 error,
                 "SGBDR", //Requête SQL
@@ -280,7 +295,8 @@ export class ProductionExerciseController{
                 false, //Requête SQL
                 0, //Requête SQL
                 5, //Requête SQL
-                20 //Requête SQL
+                20, //Requête SQL
+                exercises
             );
 
             return exerciseResponse;
@@ -358,7 +374,8 @@ export class ProductionExerciseController{
         clue: string | false,
         userPoints: number,
         exercisePoints: number,
-        totalPoints: number
+        totalPoints: number,
+        passed: IPreviousExercises | false
       ): IDefaultExerciseResponse {
 
         const response: IDefaultExerciseResponse = {
@@ -368,7 +385,8 @@ export class ProductionExerciseController{
           clue: clue,
           user_points: userPoints,
           exercise_points: exercisePoints,
-          total_point: totalPoints
+          total_point: totalPoints,
+          passed: passed
         };
       
         return response;

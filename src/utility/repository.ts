@@ -39,7 +39,8 @@ export async function isGroupExerciseActive(groupId: number): Promise< boolean|I
           clue: "",
           user_points: 0,
           exercise_points: 0,
-          total_point: 0
+          total_point: 0,
+          passed: false
         }
      return response
     }
