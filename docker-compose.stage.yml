@@ -21,7 +21,7 @@ services:
         max-size: "500m"
     
   dbms:
-    image: mariadb:11.1
+    image: mariadb:latest
     restart: always
     ports:
       - "3309:3306"
