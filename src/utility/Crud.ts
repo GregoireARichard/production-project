@@ -99,7 +99,7 @@ export class Crud {
   }
 
   public static async Read<T>(options: {
-    table: DbTable, 
+    table: DbTable,
     idKey: string, 
     idValue: number|string, 
     columns: string[]

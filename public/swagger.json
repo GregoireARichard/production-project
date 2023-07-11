@@ -67,49 +67,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IExerciseBody": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"group_id": {
-						"type": "number",
-						"format": "double"
-					},
-					"test": {
-						"properties": {
-							"port": {
-								"type": "number",
-								"format": "double"
-							},
-							"password": {
-								"type": "string",
-								"nullable": true
-							},
-							"username": {
-								"type": "string"
-							},
-							"host": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"port",
-							"password",
-							"username",
-							"host"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"name",
-					"group_id",
-					"test"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"IUser": {
 				"properties": {
 					"id": {
@@ -409,9 +366,7 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/IExerciseBody"
-							}
+							"schema": {}
 						}
 					}
 				}

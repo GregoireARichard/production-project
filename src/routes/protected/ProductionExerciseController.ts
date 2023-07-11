@@ -12,11 +12,14 @@ import { IErrorExercise } from "../../types/IErrorExercise";
 import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
 import { IExerciseBody } from "../../types/IExerciseBody";
+import { IExerciseFullBody } from "../../types/IExerciseFullBody";
 import { getExercises, isGroupExerciseActive } from "../../utility/repository";
 import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
 import { IMetaUserInfoSGBDRRO, IMetaUserInfoSSHRO } from "../../model/Meta_user_info/IMetaUserInfos";
+import { IExerciseRO } from "../../model/Exercise/IExercise";
+import { IPreviousExercises } from "../../types/IPreviousExercises";
 
 
 const router = Router({ mergeParams: true });
@@ -25,51 +28,102 @@ const router = Router({ mergeParams: true });
 @Security('jwt')
 export class ProductionExerciseController{
 
+    private static readonly SSH_COMMAND_TIMEOUT = 10000;
+
     @Post("/exercise")
-    public async runExercise(@Body() body: IExerciseBody, @Request() request: any) 
+    public async runExercise(@Body() body: any, @Request() request: any) 
     {
         const isExerciceActive = await isGroupExerciseActive(body.group_id)
-        if (isExerciceActive != null) return isExerciceActive
+        if (typeof isExerciceActive !== "boolean") return isExerciceActive
+
         try {
             const { userId } =  request.user;
 
-            const ssh =  await this.GetSSHConnexion(userId, body);
-            
+            const AllExercises = await getExercises(body.group_id);
 
-            if (!(ssh instanceof NodeSSH)) {
+            const ssh =  await this.GetSSHConnexion(userId, body as IExerciseFullBody);
+            
+            if ('error' in ssh) {
                 return ssh;
             }
             // On insère en DB Test réussi
 
-            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body);
+            const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body as IExerciseFullBody, AllExercises);
 
             if ('error' in mysql_connexion) {
                 return mysql_connexion;
             }
-            // On insère en DB Test réussi
+            // On UPDATE en DB Test réussi
               
 
+
+            //Test boucle infini: i=0; while true; do ((i++)); sleep 1; done
+            
+            for (const exercise of AllExercises) {
+                let potentialResponse = await this.prepareExerciseResponse(exercise, this.getPreviousExercises(AllExercises, exercise.question_number));
+
+                if (exercise.command) {
+                  try {
+                    let command_test = await this.executeExerciseCommand(ssh, exercise.command, potentialResponse);
+                    
+                    if (typeof command_test === 'object' && 'error' in command_test) return command_test;
+                  } catch (err: any) {
+                    const error: IErrorExercise = {
+                        title: "Command Error",
+                        message: err.message || "SSH Command Error",
+                        status_code: 500
+                    };
+        
+                    potentialResponse.error = error;
+                    return potentialResponse;
+                  }
+                }
+          
+                if (exercise.query) {
+                  try {
+                    let query_test = await this.executeExerciseQuery(mysql_connexion, exercise.query, potentialResponse);
+                    if ('error' in query_test) return query_test;
+                  } catch (err: any) {
+
+                    const error: IErrorExercise = {
+                        title: "Query Error",
+                        message: err.message || "SQL Query Error",
+                        status_code: 500
+                    };
+                    
+                    potentialResponse.error = error;
+                    return potentialResponse;
+                  }
+                }
+          
+                // On UPDATE en DB Test réussi
+              }
+          
+              mysql_connexion.release();
+              ssh.dispose();
+            
             /** On va chercher tous nos tests en DB */
             /** On boucle sur nos tests en fonction de query ou command === false */
-            const result_query = await mysql_connexion.query("SHOW TABLES;");
+
             
-            const command = await ssh.execCommand("ls -l");
+            //const command = await ssh.execCommand("ls -l");
+            
+            
             /** On valide les tests qui reviennent true, si la réponse qui revient contient error on retourne la réponse */
 
             /** Si tous les tests sont passés, les exercises sont fini, on retourne la réponse standard au front avec next et error à false */
             
-            mysql_connexion.release();
-            ssh.dispose();
+
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
                 false,
-                false,
                 "Fini",
-                "Exercise Description",
-                "Exercise Clue",
+                "",
+                "",
                 20,
                 0,
-                20
+                20,
+                this.getPreviousExercises(AllExercises, AllExercises.length)
             );
 
             // On insère en DB Test Terminé
@@ -81,7 +135,32 @@ export class ProductionExerciseController{
         }
     }
 
-    private async GetSSHConnexion(userId: number, body: IExerciseBody): Promise<NodeSSH | IDefaultExerciseResponse>
+    private getPreviousExercises(AllExercises: IExerciseRO[], index: number): IPreviousExercises
+    {
+        const passedExercises =  AllExercises
+                                .slice(0, index-1)
+                                .map(({ id, command, query, expected, ...exercise }) => exercise);
+
+        return { exercises: passedExercises };
+    }
+
+    private async prepareExerciseResponse(exercice: IExerciseRO, exercisesPassed: IPreviousExercises): Promise<IDefaultExerciseResponse>
+    { 
+        const potentialResponse: IDefaultExerciseResponse = this.ExerciseResponse(
+            false,
+            exercice.name,
+            exercice.description,
+            exercice.clue,
+            0, //Requête SQL
+            5, //Requête SQL
+            20, //Requête SQL
+            exercisesPassed
+        );
+
+        return potentialResponse
+    }
+
+    private async GetSSHConnexion(userId: number, body: IExerciseFullBody): Promise<NodeSSH | IDefaultExerciseResponse>
     {
         try {
             const db = DB.Connection;
@@ -90,8 +169,16 @@ export class ProductionExerciseController{
             if(isMetaSSH[0][0].nb_rows === 0)
             {
                 try {
-                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
+                    const data = {id_user: userId, type: body.name, host: body.test.host, username: body.test.username, port: body.test?.port || 22}
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
+                } catch (error) {
+                    console.log("error:", error);
+                    throw new Error("missing informations");
+                }
+            }else if (body.name === "ssh"){
+                try {
+                    const data = {host: body.test.host, username: body.test.username,port: body.test?.port || 22 };
+                    await db.query<RowDataPacket[]>(`UPDATE meta_user_info SET ? WHERE id_user = ? AND type = 'ssh'`, [data, userId]);
                 } catch (error) {
                     console.log("error:", error);
                     throw new Error("missing informations");
@@ -122,40 +209,48 @@ export class ProductionExerciseController{
             };
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                false,
                 error,
                 "SSH", //Requête SQL
                 "Merci de me donner l'accès à votre serveur avec la clé suivante et de me fournir les informations de connexion associé:<br><code>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRFaGoDfJYqNHC3Qx1bfTp7D9Uvy42D+VRIneJ7npz47AvVt1ReEUVyKDDxBpIMIOw9LLbzO/2AH3r9TI8wAS0p/kjdkduZVGfjwS3QXNA5bd6VZ0SqV3f23DGSr7b+GnZGSn6TpNvnccv8I6orlz/FqFi/FaHmqPik6/txWxcUyZKN5hMYn4+F4s0aYVfoaTyjJyeEMUSrIQxhqjodRmLdb00mBR/DjXV3V2MmOb12XwpQl8rRbN9xKxSaAQHZd2Kqn0ALFRBBiM6bugzFgwqg2yvNoG2TmPFvwHNSTSYhrhcnujJ93EN3T3kZ0M3dSUtgDm+LZRWgUbWxbkxqipdqET7dRPYlrz9juV4GhWpv4TNcdyjkOKH5hqX+uZMeWFM9QIbjWK8DcExNqYiu5rnGGm2DFXQxVp03yfs2jU9M7/aF4zq9tB8LGjrUCvfGFlU07YAldCthPxVMb3C+icJ3bXvajKK3Z+fIimW5tSLtTLU6drZQXYT7cvVZ5rZ21QvxzF7HX8amcmOKqMi/MiUJukEzd3we/yeIpHRzrA3ApBeTheqeT8riDDfktB0g6djpbYKSHBMi0h62sDnEeldx0+gJkUP5cwKYffQnMm4f9m1F6IuNfNHg34F95XJNQHRfhLvwdgCSzI8nBIsPpjgrZrYpORoTKeSTht+Tf17kw==</code>", //Requête SQL
                 "Le fichier où doit être copié la clé publique est le suivant: <code>/home/<votre_utilisateur>/.ssh/authorized_keys</code>", //Requête SQL
                 0, //Requête SQL
                 5, //Requête SQL
-                20 //Requête SQL
+                20, //Requête SQL
+                false
             );
 
             return exerciseResponse
         }
     }
 
-    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseBody): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
+    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody, AllExercises: IExerciseRO[]): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
     {
         try {
             const db = DB.Connection;
 
-            const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
+            const isMetaDb = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='sgbdr'`, [userId]);
             
-            if(isMetaDb[0][0].nb_rows === 0 && body.name === "mysql")
+            if(isMetaDb[0][0].nb_rows === 0 && body.name === "sgbdr")
             {
                 try {
-                    const data = {id_user: userId, group_id:body.group_id, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306}
+                    const data = {id_user: userId, type: body.name, host: body.test?.host || "localhost", username: body.test.username, password: body.test.password, port: body.test?.port || 3306 }
                     await db.query<RowDataPacket[]>(`insert into meta_user_info set ?`, data);
                 } catch (error) {
                     console.log("error:", error);
                     throw new Error("probably missing informations");
                 }
+            }else if (body.name === "sgbdr"){
+                try {
+                    const data = {host: body.test.host, username: body.test.username, password: body.test.password, port: body.test?.port || 3306 };
+                    await db.query<RowDataPacket[]>(`UPDATE meta_user_info SET ? WHERE id_user = ? AND type = 'sgbdr'`, [data, userId]);
+                } catch (error) {
+                    console.log("error:", error);
+                    throw new Error("missing informations");
+                }
             }
 
-            const mysql_meta_result = await db.query<IMetaUserInfoSGBDRRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='mysql'`, [userId]);
-
+            const mysql_meta_result = await db.query<IMetaUserInfoSGBDRRO & RowDataPacket[]>(`select * from meta_user_info where id_user = ? AND type='sgbdr'`, [userId]);
+            
             const mysql_meta = mysql_meta_result[0][0];
 
             const sshTunnel = await SSH.SSHTunnel(
@@ -191,58 +286,107 @@ export class ProductionExerciseController{
                 status_code: 500
             };
 
+            const exercises = this.getPreviousExercises(AllExercises, 2)
+
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                false,
                 error,
                 "SGBDR", //Requête SQL
                 "La connexion à la base donnée 'rgpd' à échoué sur votre serveur", //Requête SQL
                 false, //Requête SQL
                 0, //Requête SQL
                 5, //Requête SQL
-                20 //Requête SQL
+                20, //Requête SQL
+                exercises
             );
 
             return exerciseResponse;
         }
     }
 
-    private async executeExerciseCommand(ssh: any, name: any, command: any)
+    private async executeCommandWithTimeout(ssh: NodeSSH, command: string, timeout: number): Promise<string> {
+        return new Promise((resolve, reject) => {
+          const commandTimeout = setTimeout(() => {
+            reject(new Error("Command execution timed out"));
+          }, timeout);
+    
+          ssh.execCommand(command)
+            .then(result => {
+              clearTimeout(commandTimeout);
+              if(result.stderr.length > 0)
+              {
+                reject(new Error(result.stderr))
+              }
+              resolve(result.stdout);
+            })
+            .catch(error => {
+              clearTimeout(commandTimeout);
+              reject(error);
+            });
+        });
+      }
+
+    private async executeExerciseCommand(ssh: any, command: any, exerciseResponse: IDefaultExerciseResponse): Promise<string|IDefaultExerciseResponse>
     {
-        // On execute notre command
+        try {
+            const command_test = await this.executeCommandWithTimeout(ssh, command, ProductionExerciseController.SSH_COMMAND_TIMEOUT);
+            console.log(command_test);
+            
+            return command_test;
+
+          } catch (err: any) {
+
+            const error: IErrorExercise = {
+                title: "SSH Error",
+                message: err.message || "SSH Connexion Failed with Timeout",
+                status_code: 500
+            };
+
+            exerciseResponse.error = error;
+
+            return exerciseResponse;
+          }
     }
 
-    private async executeExerciseQuery(mysql_connexion: any, name: any, query: any)
+    private async executeExerciseQuery(mysql_connexion: any, query: any, exerciseResponse: IDefaultExerciseResponse)
     {
-        // On execute notre Query
-    }
+        try {
+            const query_test = await mysql_connexion.query(query);
 
-    private async setExerciseResponse(name: string, )
-    {
-        const db = DB.Connection;
+            return query_test;
+          } catch (err: any) {
 
-        // On fait une requête standard pour setNotreReponse
+            const error: IErrorExercise = {
+                title: "mysql/connexion failed",
+                message: err.message || "La requête SQL à échoué pour une raison inconnu",
+                status_code: 500
+            };
+
+            exerciseResponse.error = error;
+
+            return exerciseResponse;
+          }
     }
 
     private ExerciseResponse(
-        next: boolean,
         error: IErrorExercise | false,
         name: string,
         description: string,
         clue: string | false,
         userPoints: number,
         exercisePoints: number,
-        totalPoints: number
+        totalPoints: number,
+        passed: IPreviousExercises | false
       ): IDefaultExerciseResponse {
 
         const response: IDefaultExerciseResponse = {
-          next: next,
           error: error,
           name: name,
           description: description,
           clue: clue,
           user_points: userPoints,
           exercise_points: exercisePoints,
-          total_point: totalPoints
+          total_point: totalPoints,
+          passed: passed
         };
       
         return response;

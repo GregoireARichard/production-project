@@ -11,3 +11,4 @@
 /.mycli.log
 /.myclirc
 /secrets/signing
+.env

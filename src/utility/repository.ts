@@ -7,51 +7,58 @@ import { IExercise } from "../types/IExercise";
 import { IAdminConnectionRequest } from "../types/IAdminConnectionRequest";
 import bcrypt from "bcrypt";
 import { IChangeExerciseGroupStateRequest } from "../types/IChangeExerciseGroupStateRequest";
-
+import { IErrorExercise } from "../types/IErrorExercise";
+import { IExerciseRO } from "../model/Exercise/IExercise";
 
 const db = DB.Connection;
 const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where id = ?"
-export async function isGroupExerciseActive(groupId: number){
+const getExerciseQuery = "SELECT * FROM exercise WHERE group_id = ?"
 
+
+export async function isGroupExerciseActive(groupId: number): Promise< boolean|IDefaultExerciseResponse > {
     try {
-        const exercise: IExercise  = await getExercises(groupId)
+        const db = DB.Connection
         const exerciceData = await db.query<RowDataPacket[]>(isExerciseActiveQuery, groupId);
         const isActiveBool: number = exerciceData[0][0].is_active
-        const exerciseName = exerciceData[0][0].name
-        if(isActiveBool === 0){
-            const response: IDefaultExerciseResponse = {
-                next: false,
-                error: {
-                    title: 'Unavailable',
-                    message: 'Exercise turned off by admin',
-                    status_code: 401
-                },
-                name: exerciseName,
-                description: "Exercice arrêté par l'administrateur",
-                clue: "",
-                user_points: 0,
-                exercise_points: 0,
-                total_point: 0
-           }
-           return response
+
+        if( isActiveBool === 0) {
+            throw new Error("Exercice arrêté par l'administrateur");
         }
+
+        return true;
        
-    } catch (error) {
-        console.log("isGroupExerciseActive:", error)
+    } catch (err : any) {
+        console.log("isGroupExerciseActive:", err)
+
+        const error: IErrorExercise = {
+          title: 'Unavailable',
+          message: err.message || "Exercice arrêté par l'administrateur" ,
+          status_code: 401
+        }
+
+        const response: IDefaultExerciseResponse = {
+          error,
+          name: "",
+          description: "L'exercice est terminé !",
+          clue: "",
+          user_points: 0,
+          exercise_points: 0,
+          total_point: 0,
+          passed: false
+        }
+     return response
     }
     
 }
 
-const getExerciseQuery = "SELECT * FROM exercise WHERE group_id = ?"
-export async function getExercises(groupId: number): Promise<IExercise> {
+
+export async function getExercises(groupId: number): Promise<IExerciseRO[]> {
     try {
+      const db = DB.Connection;
       const getExercise = await db.query<RowDataPacket[]>(getExerciseQuery, groupId);
-      const exercise = getExercise[0][0] as IExercise | undefined;
-      if (exercise) {
-        return exercise;
-      } else {
-        throw new Error("Exercise not found");
-      }
+      
+      return getExercise[0] as any;
+
     } catch (error) {
       console.log("getExercise: ", error);
       throw error;

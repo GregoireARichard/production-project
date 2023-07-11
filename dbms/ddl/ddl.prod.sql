@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `exercise_group` (
     UNIQUE INDEX `unique_name` (`name`)
 );
 
-CREATE TABLE `exercise` (
+CREATE TABLE IF NOT EXISTS exercise (
   `id` INT AUTO_INCREMENT,
   `question_number` INT,
   `name` VARCHAR(255),
@@ -36,6 +36,8 @@ CREATE TABLE `exercise` (
   `clue` VARCHAR(255),
   `command` TEXT DEFAULT NULL,
   `query` TEXT DEFAULT NULL,
+  `expected` VARCHAR(255),
+  `points` INT,
   `group_id` INT,
   FOREIGN KEY (`group_id`) REFERENCES `exercise_group`(`id`),
   PRIMARY KEY (`id`),
@@ -50,6 +52,8 @@ CREATE TABLE IF NOT EXISTS `user_exercise` (
   FOREIGN KEY (`id_user`) REFERENCES `user`(`id`),
   FOREIGN KEY (`last_exercice_validate_id`) REFERENCES `exercise`(`id`)
 );
+
+INSERT INTO `exercise_group` (`id`, `is_active`, `name`) VALUES (NULL, '1', 'Production');
 
 create user IF NOT EXISTS 'produsr'@'%.%.%.%' identified by 'prodpswd';
 grant select, update, insert, delete on production.* to 'produsr'@'%.%.%.%';
