@@ -68,6 +68,7 @@
 					"sql/not-found",
 					"validation/failed",
 					"auth/missing-email",
+					"auth/missing-group-id",
 					"auth/unknown-email",
 					"auth/missing-magic-link-token",
 					"auth/invalid-magic-link-token",
@@ -166,7 +167,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IUser": {
+			"Pick_IUserGroupID.Exclude_keyofIUserGroupID.group_id__": {
 				"properties": {
 					"id": {
 						"type": "number",
@@ -185,7 +186,14 @@
 					"full_name"
 				],
 				"type": "object",
-				"additionalProperties": false
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Omit_IUserGroupID.group_id_": {
+				"$ref": "#/components/schemas/Pick_IUserGroupID.Exclude_keyofIUserGroupID.group_id__",
+				"description": "Construct a type with the properties of T except for those in type K."
+			},
+			"IUser": {
+				"$ref": "#/components/schemas/Omit_IUserGroupID.group_id_"
 			},
 			"IIndexResponse_IUser_": {
 				"properties": {

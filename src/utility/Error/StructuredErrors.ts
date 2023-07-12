@@ -8,6 +8,7 @@ export type StructuredErrors =
     
   // Authorization
   'auth/missing-email' |
+  'auth/missing-group-id' |
   'auth/unknown-email' |
   'auth/missing-magic-link-token' |
   'auth/invalid-magic-link-token' |

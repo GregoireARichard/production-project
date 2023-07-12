@@ -55,7 +55,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "StructuredErrors": {
         "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["sql/failed"]},{"dataType":"enum","enums":["sql/not-found"]},{"dataType":"enum","enums":["validation/failed"]},{"dataType":"enum","enums":["auth/missing-email"]},{"dataType":"enum","enums":["auth/unknown-email"]},{"dataType":"enum","enums":["auth/missing-magic-link-token"]},{"dataType":"enum","enums":["auth/invalid-magic-link-token"]},{"dataType":"enum","enums":["auth/missing-header"]},{"dataType":"enum","enums":["auth/access-token-expired"]},{"dataType":"enum","enums":["auth/invalid-access-token"]},{"dataType":"enum","enums":["user/register/user-already-exists"]},{"dataType":"enum","enums":["ssh/connexion failed"]},{"dataType":"enum","enums":["mysql/connexion failed"]},{"dataType":"enum","enums":["internal/unknown"]}],"validators":{}},
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["sql/failed"]},{"dataType":"enum","enums":["sql/not-found"]},{"dataType":"enum","enums":["validation/failed"]},{"dataType":"enum","enums":["auth/missing-email"]},{"dataType":"enum","enums":["auth/missing-group-id"]},{"dataType":"enum","enums":["auth/unknown-email"]},{"dataType":"enum","enums":["auth/missing-magic-link-token"]},{"dataType":"enum","enums":["auth/invalid-magic-link-token"]},{"dataType":"enum","enums":["auth/missing-header"]},{"dataType":"enum","enums":["auth/access-token-expired"]},{"dataType":"enum","enums":["auth/invalid-access-token"]},{"dataType":"enum","enums":["user/register/user-already-exists"]},{"dataType":"enum","enums":["ssh/connexion failed"]},{"dataType":"enum","enums":["mysql/connexion failed"]},{"dataType":"enum","enums":["internal/unknown"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ApiError": {
@@ -96,14 +96,19 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_IUserGroupID.Exclude_keyofIUserGroupID.group_id__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"double","required":true},"email":{"dataType":"string","required":true},"full_name":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_IUserGroupID.group_id_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_IUserGroupID.Exclude_keyofIUserGroupID.group_id__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUser": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"double","required":true},
-            "email": {"dataType":"string","required":true},
-            "full_name": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_IUserGroupID.group_id_","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IIndexResponse_IUser_": {
@@ -112,7 +117,7 @@ const models: TsoaRoute.Models = {
             "page": {"dataType":"double","required":true},
             "limit": {"dataType":"double","required":true},
             "total": {"dataType":"double","required":true},
-            "rows": {"dataType":"array","array":{"dataType":"refObject","ref":"IUser"},"required":true},
+            "rows": {"dataType":"array","array":{"dataType":"refAlias","ref":"IUser"},"required":true},
         },
         "additionalProperties": false,
     },

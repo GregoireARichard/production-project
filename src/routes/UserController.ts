@@ -1,5 +1,5 @@
 import { Body, Delete, Get, Path, Post, Put, Query, Route } from 'tsoa';
-import { IUser, IUserCreate, IUserUpdate } from '../model/User/IUser';
+import { IUser, IUserCreate, IUserGroupID, IUserUpdate } from '../model/User/IUser';
 import { ICreateResponse } from '../types/ICreateResponse';
 import { IIndexResponse } from '../types/IIndexQuery';
 import { IUpdateResponse } from '../types/IUpdateResponse';
@@ -63,12 +63,18 @@ export class UserController {
     if (!regexEmail.test(body.email)) {
       throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Bad Email");
       }
+
+    if (!body.group_id) {
+      throw new ApiError(ErrorCode.BadRequest, 'auth/missing-group-id', "Bad group_id");
+      }
+
     const existUser = await Crud.CheckExists<IUser>({
       table: 'user', 
       idKey: 'email', 
       idValue: body.email, 
       columns: READ_COLUMNS
     });
+    
     let user: IUser | ICreateResponse;
     if (existUser instanceof Object) {
       user = existUser as IUser;
