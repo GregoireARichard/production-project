@@ -147,8 +147,17 @@ export async function insertOrUpdateExerciseResult(exercise: IExerciseRO, user_p
       }
   
     } catch (error) {
-      console.log("error:", error);
+      console.log("insertOrUpdateExerciseResult:", error);
       
     }
+}
+
+const addNewExGroupQuery = "INSERT INTO exercise_group (is_active, name) values(true, ?)"
+export async function insertExerciseGroup(name: string): Promise<void>{
+  try {
+    const queryResult = db.query<RowDataPacket[]>(addNewExGroupQuery, name)
+  } catch (error) {
+      console.log("insertExerciseGroup:", error)
   }
+}
 

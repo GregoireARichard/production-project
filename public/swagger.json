@@ -135,6 +135,18 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IInsertNewExerciseGroup": {
+				"properties": {
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IExerciseBody": {
 				"properties": {
 					"name": {
@@ -486,6 +498,32 @@
 					}
 				],
 				"parameters": []
+			}
+		},
+		"/admin/add_exercise_group": {
+			"post": {
+				"operationId": "AddExerciseGroup",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"JWTADMIN": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IInsertNewExerciseGroup"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/production/exercise": {
