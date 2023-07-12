@@ -31,7 +31,7 @@ export class ProductionExerciseController{
     private static readonly SSH_COMMAND_TIMEOUT = 10000;
 
     @Post("/exercise")
-    public async runExercise(@Body() body: any, @Request() request: any) 
+    public async runExercise(@Body() body: IExerciseFullBody, @Request() request: any) 
     {
         const isExerciceActive = await isGroupExerciseActive(body.group_id)
         if (typeof isExerciceActive !== "boolean") return isExerciceActive

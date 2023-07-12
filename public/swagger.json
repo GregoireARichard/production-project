@@ -67,6 +67,53 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IExerciseFullBody": {
+				"properties": {
+					"id_student": {
+						"type": "number",
+						"format": "double"
+					},
+					"name": {
+						"type": "string"
+					},
+					"group_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"test": {
+						"properties": {
+							"port": {
+								"type": "number",
+								"format": "double"
+							},
+							"password": {
+								"type": "string"
+							},
+							"username": {
+								"type": "string"
+							},
+							"host": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"port",
+							"password",
+							"username",
+							"host"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"id_student",
+					"name",
+					"group_id",
+					"test"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IUser": {
 				"properties": {
 					"id": {
@@ -366,7 +413,9 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {}
+							"schema": {
+								"$ref": "#/components/schemas/IExerciseFullBody"
+							}
 						}
 					}
 				}

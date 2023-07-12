@@ -5,13 +5,14 @@ import { IAccessToken, IAccessTokenAdmin } from '../types/auth/IAccessToken';
 import { JWT } from '../utility/JWT';
 import { ACCESS_AUD, ISSUER } from '../routes/AuthController';
 import { ADMIN_AUD } from '../routes/AdminController';
+import { IExpressAuthResponse } from '../types/IExpressAuthResponse';
 
 
 export async function expressAuthentication(
   request: Request,
   securityName: string,
   scopes?: string[]
-): Promise<any> {
+): Promise<IExpressAuthResponse> {
 
   if (securityName === 'jwt') {
     const authheader = request.headers.authorization || '';
