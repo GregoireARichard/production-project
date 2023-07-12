@@ -116,6 +116,7 @@ export async function getStudentsResults(): Promise<any> {
 
 }
 
+
 const getAllExercisesGroupsQuery = "SELECT is_active, name from exercise_group"
 export async function getAllExerciseGroups(){
     try {
@@ -125,3 +126,30 @@ export async function getAllExerciseGroups(){
         console.log('getAllExerciseGroups:', error) 
     }
 }
+
+export async function insertOrUpdateExerciseResult(exercise: IExercise, userId: number): Promise<void> {
+    try {
+      const selectQuery = `SELECT id_user FROM user_exercise WHERE id_user = ?`;
+      const selectParams = [userId];
+
+      const [checkuser] = await db.query<RowDataPacket[]>(selectQuery, selectParams);
+      if (checkuser.length === 0) {
+        // Si aucune ligne correspondante n'est trouvée, effectuer un INSERT
+        const insertQuery = `INSERT INTO user_exercise (id_user, last_exercice_validate_id, points) VALUES (?, ?, ?)`;
+        const insertParams = [userId, exercise.id, exercise.points ];
+  
+        await db.query<RowDataPacket[]>(insertQuery, insertParams);
+      } else {
+        // Si une ligne correspondante est trouvée, effectuer un UPDATE
+        const updateQuery = `UPDATE user_exercise SET points =  ?, last_exercice_validate_id = ? WHERE id_user = ?`;
+        const updateParams = [ exercise.points,exercise.id, userId];
+
+        await db.query<RowDataPacket[]>(updateQuery, updateParams);
+      }
+  
+    } catch (error) {
+      console.log("error:", error);
+      
+    }
+  }
+

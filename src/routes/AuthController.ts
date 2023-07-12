@@ -48,7 +48,7 @@ export class AuthController {
     
   //   const emailer = new Email();
 
-  //   const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
+  //   const link = (process.env.FRONT_URL || 'http://localhost:' + idStudent(process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
   //   await emailer.sendMagicLink(email, link, 'Mon service');
 
   //   return {
