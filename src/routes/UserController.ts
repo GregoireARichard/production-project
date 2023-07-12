@@ -94,7 +94,7 @@ export class UserController {
 
         //Enfin envoi de mail
         const emailer = new Email();
-        const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login?jwt=' + encodeURIComponent(encoded);
+        const link = (process.env.FRONT_URL || 'http://localhost:' + (process.env.PORT || 5050)) + '/auth/login/' + encodeURIComponent(encoded);
         try {
           await emailer.sendMagicLink(body.email, link, 'Mon service');
         } catch (error) {
