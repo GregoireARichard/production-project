@@ -30,10 +30,8 @@ export class ProductionExerciseController{
 
     private static readonly SSH_COMMAND_TIMEOUT = 10000;
       
-      
-
     @Post("/exercise")
-    public async runExercise(@Body() body: IExerciseFullBody, @Request() request: any) 
+    public async runExercise(@Body() body: IExerciseBody, @Request() request: any) 
     {
         const isExerciceActive = await isGroupExerciseActive(body.group_id)
         if (typeof isExerciceActive !== "boolean") return isExerciceActive
@@ -42,32 +40,46 @@ export class ProductionExerciseController{
             const { userId } =  request.user;
 
             const AllExercises = await getExercises(body.group_id);
-
-            const ssh =  await this.GetSSHConnexion(userId, body as IExerciseFullBody);
+            const totalPoints: number = AllExercises.reduce((acc, curr) => acc + curr.points, 0);
+            let user_points = 0;
+            let potentialResponse = await this.prepareExerciseResponse(AllExercises[0], user_points, totalPoints, false);
             
-            if ('error' in ssh) {
-                return ssh;
+
+            const ssh = await this.GetSSHConnexion(userId, body as IExerciseFullBody);
+            
+            if ('status_code' in ssh) {
+                potentialResponse.error = ssh;
+                
+                return potentialResponse;
             }
-            // On insère en DB Test réussi
+            await insertOrUpdateExerciseResult(AllExercises[0], userId);
+            user_points += AllExercises[0].points;
+
+            potentialResponse = await this.prepareExerciseResponse(AllExercises[1], user_points, totalPoints, false);
 
             const mysql_connexion = await this.getMysqlTunnelConnexion(ssh, userId, body as IExerciseFullBody, AllExercises);
 
-            if ('error' in mysql_connexion) {
-                return mysql_connexion;
+            if ('status_code' in mysql_connexion) {
+                potentialResponse.passed = this.getPreviousExercises(AllExercises, 2);
+                potentialResponse.error = mysql_connexion;
+
+                return potentialResponse;
             }
-            // On UPDATE en DB Test réussi
+            await insertOrUpdateExerciseResult(AllExercises[1], userId);
+            user_points += AllExercises[1].points;
               
-
-
             //Test boucle infini: i=0; while true; do ((i++)); sleep 1; done
             for (const exercise of AllExercises) {
-                let potentialResponse = await this.prepareExerciseResponse(exercise, this.getPreviousExercises(AllExercises, exercise.question_number));
+                
+                potentialResponse = await this.prepareExerciseResponse(exercise, user_points, totalPoints, this.getPreviousExercises(AllExercises, exercise.question_number));
 
                 if (exercise.command) {
                   try {
                     let command_test = await this.executeExerciseCommand(ssh, exercise.command, potentialResponse);
                     
                     if (typeof command_test === 'object' && 'error' in command_test) return command_test;
+                    if (command_test !== exercise.expected) throw Error("La valeur attendu n'est pas la bonne");
+
                   } catch (err: any) {
                     const error: IErrorExercise = {
                         title: "Command Error",
@@ -81,9 +93,13 @@ export class ProductionExerciseController{
                 }
           
                 if (exercise.query) {
+
                   try {
+
                     let query_test = await this.executeExerciseQuery(mysql_connexion, exercise.query, potentialResponse);
                     if ('error' in query_test) return query_test;
+                    if (query_test !== exercise.expected) throw Error("La valeur attendu n'est pas la bonne");
+
                   } catch (err: any) {
 
                     const error: IErrorExercise = {
@@ -99,32 +115,20 @@ export class ProductionExerciseController{
           
                 // On UPDATE en DB Test réussi
                 await insertOrUpdateExerciseResult(exercise, userId);
+                user_points += exercise.points;
               }
           
               mysql_connexion.release();
               ssh.dispose();
-            
-            /** On va chercher tous nos tests en DB */
-            /** On boucle sur nos tests en fonction de query ou command === false */
-
-            
-            //const command = await ssh.execCommand("ls -l");
-            
-            
-            /** On valide les tests qui reviennent true, si la réponse qui revient contient error on retourne la réponse */
-
-            /** Si tous les tests sont passés, les exercises sont fini, on retourne la réponse standard au front avec next et error à false */
-            
-
 
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
                 false,
                 "Fini",
                 "",
                 "",
-                20,
+                user_points,
                 0,
-                20,
+                totalPoints,
                 this.getPreviousExercises(AllExercises, AllExercises.length)
             );
 
@@ -133,7 +137,7 @@ export class ProductionExerciseController{
             return exerciseResponse;
 
         } catch (error) {
-            console.log("error:", error);
+            console.error(error);
         }
     }
 
@@ -146,23 +150,23 @@ export class ProductionExerciseController{
         return { exercises: passedExercises };
     }
 
-    private async prepareExerciseResponse(exercice: IExerciseRO, exercisesPassed: IPreviousExercises): Promise<IDefaultExerciseResponse>
+    private async prepareExerciseResponse(exercice: IExerciseRO, userPoints: number, totalPoints: number, exercisesPassed: IPreviousExercises | false): Promise<IDefaultExerciseResponse>
     { 
         const potentialResponse: IDefaultExerciseResponse = this.ExerciseResponse(
             false,
             exercice.name,
             exercice.description,
             exercice.clue,
-            0, //Requête SQL
-            5, //Requête SQL
-            20, //Requête SQL
+            userPoints | 0,
+            exercice.points,
+            totalPoints,
             exercisesPassed
         );
 
         return potentialResponse
     }
 
-    private async GetSSHConnexion(userId: number, body: IExerciseFullBody): Promise<NodeSSH | IDefaultExerciseResponse>
+    private async GetSSHConnexion(userId: number, body: IExerciseFullBody): Promise<NodeSSH | IErrorExercise>
     {
         try {
             const db = DB.Connection;
@@ -209,23 +213,11 @@ export class ProductionExerciseController{
                 message: err.message || "SSH connection failed",
                 status_code: 500
             };
-
-            const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                error,
-                "SSH", //Requête SQL
-                "Merci de me donner l'accès à votre serveur avec la clé suivante et de me fournir les informations de connexion associé:<br><code>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRFaGoDfJYqNHC3Qx1bfTp7D9Uvy42D+VRIneJ7npz47AvVt1ReEUVyKDDxBpIMIOw9LLbzO/2AH3r9TI8wAS0p/kjdkduZVGfjwS3QXNA5bd6VZ0SqV3f23DGSr7b+GnZGSn6TpNvnccv8I6orlz/FqFi/FaHmqPik6/txWxcUyZKN5hMYn4+F4s0aYVfoaTyjJyeEMUSrIQxhqjodRmLdb00mBR/DjXV3V2MmOb12XwpQl8rRbN9xKxSaAQHZd2Kqn0ALFRBBiM6bugzFgwqg2yvNoG2TmPFvwHNSTSYhrhcnujJ93EN3T3kZ0M3dSUtgDm+LZRWgUbWxbkxqipdqET7dRPYlrz9juV4GhWpv4TNcdyjkOKH5hqX+uZMeWFM9QIbjWK8DcExNqYiu5rnGGm2DFXQxVp03yfs2jU9M7/aF4zq9tB8LGjrUCvfGFlU07YAldCthPxVMb3C+icJ3bXvajKK3Z+fIimW5tSLtTLU6drZQXYT7cvVZ5rZ21QvxzF7HX8amcmOKqMi/MiUJukEzd3we/yeIpHRzrA3ApBeTheqeT8riDDfktB0g6djpbYKSHBMi0h62sDnEeldx0+gJkUP5cwKYffQnMm4f9m1F6IuNfNHg34F95XJNQHRfhLvwdgCSzI8nBIsPpjgrZrYpORoTKeSTht+Tf17kw==</code>", //Requête SQL
-                "Le fichier où doit être copié la clé publique est le suivant: <code>/home/<votre_utilisateur>/.ssh/authorized_keys</code>", //Requête SQL
-                0, //Requête SQL
-                5, //Requête SQL
-                20, //Requête SQL
-                false
-            );
-
-            return exerciseResponse
+            return error;
         }
     }
 
-    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody, AllExercises: IExerciseRO[]): Promise< mysql.PoolConnection | IDefaultExerciseResponse>
+    private async getMysqlTunnelConnexion(ssh: NodeSSH, userId: number, body: IExerciseFullBody, AllExercises: IExerciseRO[]): Promise< mysql.PoolConnection | IErrorExercise>
     {
         try {
             const db = DB.Connection;
@@ -288,20 +280,8 @@ export class ProductionExerciseController{
                 status_code: 500
             };
 
-            const exercises = this.getPreviousExercises(AllExercises, 2)
-
-            const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
-                error,
-                "SGBDR", //Requête SQL
-                "La connexion à la base donnée 'rgpd' à échoué sur votre serveur", //Requête SQL
-                false, //Requête SQL
-                0, //Requête SQL
-                5, //Requête SQL
-                20, //Requête SQL
-                exercises
-            );
-
-            return exerciseResponse;
+            return error;
+            
         }
     }
 
@@ -331,7 +311,6 @@ export class ProductionExerciseController{
     {
         try {
             const command_test = await this.executeCommandWithTimeout(ssh, command, ProductionExerciseController.SSH_COMMAND_TIMEOUT);
-            console.log(command_test);
             
             return command_test;
 

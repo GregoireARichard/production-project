@@ -134,12 +134,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IExerciseFullBody": {
+			"IExerciseBody": {
 				"properties": {
-					"id_student": {
-						"type": "number",
-						"format": "double"
-					},
 					"name": {
 						"type": "string"
 					},
@@ -165,7 +161,6 @@
 						},
 						"required": [
 							"port",
-							"password",
 							"username",
 							"host"
 						],
@@ -173,10 +168,7 @@
 					}
 				},
 				"required": [
-					"id_student",
-					"name",
-					"group_id",
-					"test"
+					"group_id"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -519,7 +511,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/IExerciseFullBody"
+								"$ref": "#/components/schemas/IExerciseBody"
 							}
 						}
 					}
