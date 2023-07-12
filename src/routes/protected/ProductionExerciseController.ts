@@ -31,7 +31,7 @@ export class ProductionExerciseController{
     private static readonly SSH_COMMAND_TIMEOUT = 10000;
 
     @Post("/exercise")
-    public async runExercise(@Body() body: any, @Request() request: any) 
+    public async runExercise(@Body() body: IExerciseFullBody, @Request() request: any) 
     {
         const isExerciceActive = await isGroupExerciseActive(body.group_id)
         if (typeof isExerciceActive !== "boolean") return isExerciceActive
@@ -211,8 +211,8 @@ export class ProductionExerciseController{
             const exerciseResponse: IDefaultExerciseResponse = this.ExerciseResponse(
                 error,
                 "SSH", //Requête SQL
-                "Merci de me donner l'accès à votre serveur avec la clé suivante et de me fournir les informations de connexion associé:<br><code>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRFaGoDfJYqNHC3Qx1bfTp7D9Uvy42D+VRIneJ7npz47AvVt1ReEUVyKDDxBpIMIOw9LLbzO/2AH3r9TI8wAS0p/kjdkduZVGfjwS3QXNA5bd6VZ0SqV3f23DGSr7b+GnZGSn6TpNvnccv8I6orlz/FqFi/FaHmqPik6/txWxcUyZKN5hMYn4+F4s0aYVfoaTyjJyeEMUSrIQxhqjodRmLdb00mBR/DjXV3V2MmOb12XwpQl8rRbN9xKxSaAQHZd2Kqn0ALFRBBiM6bugzFgwqg2yvNoG2TmPFvwHNSTSYhrhcnujJ93EN3T3kZ0M3dSUtgDm+LZRWgUbWxbkxqipdqET7dRPYlrz9juV4GhWpv4TNcdyjkOKH5hqX+uZMeWFM9QIbjWK8DcExNqYiu5rnGGm2DFXQxVp03yfs2jU9M7/aF4zq9tB8LGjrUCvfGFlU07YAldCthPxVMb3C+icJ3bXvajKK3Z+fIimW5tSLtTLU6drZQXYT7cvVZ5rZ21QvxzF7HX8amcmOKqMi/MiUJukEzd3we/yeIpHRzrA3ApBeTheqeT8riDDfktB0g6djpbYKSHBMi0h62sDnEeldx0+gJkUP5cwKYffQnMm4f9m1F6IuNfNHg34F95XJNQHRfhLvwdgCSzI8nBIsPpjgrZrYpORoTKeSTht+Tf17kw==</code>", //Requête SQL
-                "Le fichier où doit être copié la clé publique est le suivant: <code>/home/<votre_utilisateur>/.ssh/authorized_keys</code>", //Requête SQL
+                "Merci de me donner l'accès à votre serveur avec la clé suivante et de me fournir les informations de connexion associé:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRFaGoDfJYqNHC3Qx1bfTp7D9Uvy42D+VRIneJ7npz47AvVt1ReEUVyKDDxBpIMIOw9LLbzO/2AH3r9TI8wAS0p/kjdkduZVGfjwS3QXNA5bd6VZ0SqV3f23DGSr7b+GnZGSn6TpNvnccv8I6orlz/FqFi/FaHmqPik6/txWxcUyZKN5hMYn4+F4s0aYVfoaTyjJyeEMUSrIQxhqjodRmLdb00mBR/DjXV3V2MmOb12XwpQl8rRbN9xKxSaAQHZd2Kqn0ALFRBBiM6bugzFgwqg2yvNoG2TmPFvwHNSTSYhrhcnujJ93EN3T3kZ0M3dSUtgDm+LZRWgUbWxbkxqipdqET7dRPYlrz9juV4GhWpv4TNcdyjkOKH5hqX+uZMeWFM9QIbjWK8DcExNqYiu5rnGGm2DFXQxVp03yfs2jU9M7/aF4zq9tB8LGjrUCvfGFlU07YAldCthPxVMb3C+icJ3bXvajKK3Z+fIimW5tSLtTLU6drZQXYT7cvVZ5rZ21QvxzF7HX8amcmOKqMi/MiUJukEzd3we/yeIpHRzrA3ApBeTheqeT8riDDfktB0g6djpbYKSHBMi0h62sDnEeldx0+gJkUP5cwKYffQnMm4f9m1F6IuNfNHg34F95XJNQHRfhLvwdgCSzI8nBIsPpjgrZrYpORoTKeSTht+Tf17kw==", //Requête SQL
+                "Le fichier où doit être copié la clé publique est le suivant: /home/<votre_utilisateur>/.ssh/authorized_keys", //Requête SQL
                 0, //Requête SQL
                 5, //Requête SQL
                 20, //Requête SQL
