@@ -57,7 +57,7 @@ export class UserController {
    */
   @Post('/register')
   public async registerUser(
-    @Body() body: IUserCreate
+    @Body() body: any
   ): Promise<{ ok: boolean}> {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(body.email)) {
@@ -72,11 +72,11 @@ export class UserController {
     let user: IUser | ICreateResponse;
     if (existUser instanceof Object) {
       user = existUser as IUser;
-      // console.log("utilisateur deja existant",user);
     }else{
+      const { group_id, ...newBody } = body;
         //on crée l'utilisateur en base
        user = await Crud.Create<IUserCreate>({
-        body: body, 
+        body: newBody, 
         table: 'user'
       });
     }
