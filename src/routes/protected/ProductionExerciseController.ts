@@ -79,6 +79,7 @@ export class ProductionExerciseController{
                     
                     if (typeof command_test === 'object' && 'error' in command_test) return command_test;
                     if (command_test !== exercise.expected) throw Error("La valeur attendu n'est pas la bonne");
+                    user_points += exercise.points;
 
                   } catch (err: any) {
                     const error: IErrorExercise = {
@@ -99,7 +100,7 @@ export class ProductionExerciseController{
                     let query_test = await this.executeExerciseQuery(mysql_connexion, exercise.query, potentialResponse);
                     if ('error' in query_test) return query_test;
                     if (query_test !== exercise.expected) throw Error("La valeur attendu n'est pas la bonne");
-
+                    user_points += exercise.points;
                   } catch (err: any) {
 
                     const error: IErrorExercise = {
@@ -115,7 +116,6 @@ export class ProductionExerciseController{
           
                 // On UPDATE en DB Test réussi
                 await insertOrUpdateExerciseResult(exercise, userId);
-                user_points += exercise.points;
               }
           
               mysql_connexion.release();
