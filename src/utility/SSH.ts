@@ -19,7 +19,7 @@ export class SSH {
             host: params.host,
             username: params.username,
             port: params.port,
-            privateKeyPath: '/home/dev/secrets/signing/ovh_vps'
+            privateKeyPath: process.env.RSA_PRIVATE_KEY ||'/home/dev/secrets/signing/ovh_vps'
         })
 
         if (ssh.isConnected()) {

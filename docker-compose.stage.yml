@@ -20,6 +20,7 @@ services:
       - DB_USER=produsr
       - DB_DATABASE=production
       - DB_PASSWORD=prodpswd
+      - RSA_PRIVATE_KEY=/app/secrets/signing/ovh_vps
     networks:
       - api-network
     restart: always
