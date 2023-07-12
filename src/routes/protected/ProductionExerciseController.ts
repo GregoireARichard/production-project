@@ -36,7 +36,6 @@ export class ProductionExerciseController{
         
         try {
             const { userId, group_id } =  request.user;
-            console.log(group_id);
             
             const isExerciceActive = await isGroupExerciseActive(group_id)
             if (typeof isExerciceActive !== "boolean") return isExerciceActive

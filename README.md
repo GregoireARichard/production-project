@@ -1,24 +1,25 @@
 # Api Code Samples
 
-Un exemple API avec NodeJS et Express.
+Un exemple API avec NodeJS et Express.<br>
 
 ## Instructions d'utilisation
 
-Le projet est concu pour un VSCode Dev Container. Relancez le projet dans un DevContainer, et ouvrez un terminal.
-
-Avant de lancer le serveur il faut d'abord préparer la base de données :
+Le projet est concu pour un VSCode Dev Container. Relancez le projet dans un DevContainer, et ouvrez un terminal.<br>
+<br>
+Avant de lancer le serveur il faut d'abord préparer la base de données :<br>
 
 ```bash
 mycli -h dbms -u root < ./dbms/ddl/admin.sql
 mycli -h dbms -u root < ./dbms/ddl/ddl.prod.sql
 ```
 
-Pour insérer les tests:
+Pour insérer les tests:<br>
+
 ```bash
 mycli -h dbms -u root < ./dbms/ddl/exercises.sql
 ```
 
-On génère les clé pour le JWT:
+On génère les clé pour le JWT:<br>
 
 ```bash
 cd ./secrets/signing
@@ -27,30 +28,32 @@ openssl rsa -in signing.key -pubout -outform PEM -out signing.pub
 cd ./../..
 ```
 
-Ensuite, on peut lancer le serveur avec :
+Ensuite, on peut lancer le serveur avec :<br>
 
 ```bash
 npm run server
 ```
 
-## Tests Postman
+## Workflow:
 
-Workflow:
-
-POST http://localhost:5050/user/register
-Body: {
+POST http://localhost:5050/user/register<br>
+```json
+{
     "email": "gravity.neo@gmail.com",
     "full_name": "FEREGOTTO Romain",
     "group_id": 1
 }
+```
 
-GET sur la réponse details: linkJwt et mettre le <b>actual</b> de la réponse dans le Authorization (Bearer Token)
+GET sur la réponse details: linkJwt et mettre le <b>actual</b> de la réponse dans le Authorization (Bearer Token)<br>
 
-Ensuite, pour valider les tests :
+Ensuite, pour valider les tests :<br>
 
-POST http://localhost:5050/production/exercise
-Body 1: 
-ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas correctement chez vous :)
+POST http://localhost:5050/production/exercise<br>
+
+Body 1: <br>
+ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas correctement chez vous :)<br>
+
 ```json
 {
     "name": "ssh",
@@ -61,7 +64,7 @@ ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas co
     }
 }
 ```
-Body 2: 
+Body 2: <br>
 ```json
 {
     "name": "sgbdr",
@@ -71,13 +74,6 @@ Body 2:
         "password": "3652",
         "port": 3306
     }
-}
-```
-
-Tous les autres Body:
-```json
-{
-    "group_id": 1
 }
 ```
 
@@ -117,6 +113,3 @@ Tous les autres Body:
     }
 }
 ```
-
-
-Un export des tests pour Postman se trouve dans [./src/test/postman/api.postman_collection.json](./src/test/postman/api.postman_collection.json)
