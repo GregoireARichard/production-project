@@ -87,6 +87,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IInsertNewExerciseGroup": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IExerciseBody": {
         "dataType": "refObject",
         "properties": {
@@ -294,6 +302,32 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.GetStudentsResults.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/admin/add_exercise_group',
+            authenticateMiddleware([{"JWTADMIN":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController)),
+            ...(fetchMiddlewares<RequestHandler>(adminManagementController.prototype.addExerciseGroup)),
+
+            function adminManagementController_addExerciseGroup(request: any, response: any, next: any) {
+            const args = {
+                    body: {"in":"body","name":"body","required":true,"ref":"IInsertNewExerciseGroup"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new adminManagementController();
+
+
+              const promise = controller.addExerciseGroup.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
