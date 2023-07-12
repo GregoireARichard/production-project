@@ -13,7 +13,7 @@ import { NodeSSH } from "node-ssh";
 import { errorMonitor } from "mysql2/typings/mysql/lib/Connection";
 import { IExerciseBody } from "../../types/IExerciseBody";
 import { IExerciseFullBody } from "../../types/IExerciseFullBody";
-import { getExercises, isGroupExerciseActive } from "../../utility/repository";
+import { getExercises, insertOrUpdateExerciseResult, isGroupExerciseActive } from "../../utility/repository";
 import { IExercise } from "../../types/IExercise";
 import IIsGroupExercise from "../../types/IIsGroupExerciseActive";
 import IIsGroupExerciseActive from "../../types/IIsGroupExerciseActive";
@@ -29,6 +29,8 @@ const router = Router({ mergeParams: true });
 export class ProductionExerciseController{
 
     private static readonly SSH_COMMAND_TIMEOUT = 10000;
+      
+      
 
     @Post("/exercise")
     public async runExercise(@Body() body: IExerciseFullBody, @Request() request: any) 
@@ -58,7 +60,6 @@ export class ProductionExerciseController{
 
 
             //Test boucle infini: i=0; while true; do ((i++)); sleep 1; done
-            
             for (const exercise of AllExercises) {
                 let potentialResponse = await this.prepareExerciseResponse(exercise, this.getPreviousExercises(AllExercises, exercise.question_number));
 
@@ -97,6 +98,7 @@ export class ProductionExerciseController{
                 }
           
                 // On UPDATE en DB Test réussi
+                await insertOrUpdateExerciseResult(exercise, userId);
               }
           
               mysql_connexion.release();
