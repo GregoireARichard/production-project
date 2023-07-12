@@ -9,6 +9,8 @@ import bcrypt from "bcrypt";
 import { IChangeExerciseGroupStateRequest } from "../types/IChangeExerciseGroupStateRequest";
 import { IErrorExercise } from "../types/IErrorExercise";
 import { IExerciseRO } from "../model/Exercise/IExercise";
+import { ApiError } from "./Error/ApiError";
+import { ErrorCode } from "./Error/ErrorCode";
 
 const db = DB.Connection;
 const isExerciseActiveQuery = "SELECT is_active, name from exercise_group where id = ?"
@@ -80,10 +82,13 @@ export async function checkIfAdminAccountIsValid(body: IAdminConnectionRequest):
     return false
 }
 
-export async function changeExerciseGroupStateRepository(body: IChangeExerciseGroupStateRequest): Promise<void>{
+export async function changeExerciseGroupStateRepository(body: IChangeExerciseGroupStateRequest): Promise<void | string>{
     const changeExerciseGroupStateQuery = `UPDATE exercise_group SET is_active= ${body.state} where name = '${body.name}'`
     try {
-        await db.query<RowDataPacket[]>(changeExerciseGroupStateQuery)
+       const query: any = await db.query<RowDataPacket[]>(changeExerciseGroupStateQuery)
+       if (query[0].affectedRows === 0){
+            return "Record not found"
+       }
     } catch (error) {
         console.log("changeExerciseGroupState: ", error)
     }
@@ -111,6 +116,17 @@ export async function getStudentsResults(): Promise<any> {
 
 }
 
+
+const getAllExercisesGroupsQuery = "SELECT is_active, name from exercise_group"
+export async function getAllExerciseGroups(){
+    try {
+        const result  = await db.query<RowDataPacket[]>(getAllExercisesGroupsQuery)
+        return result[0]
+    } catch (error) {
+        console.log('getAllExerciseGroups:', error) 
+    }
+}
+
 export async function insertOrUpdateExerciseResult(exercise: IExercise, userId: number): Promise<void> {
     try {
       const selectQuery = `SELECT id_user FROM user_exercise WHERE id_user = ?`;
@@ -136,3 +152,4 @@ export async function insertOrUpdateExerciseResult(exercise: IExercise, userId: 
       
     }
   }
+
