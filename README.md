@@ -39,7 +39,9 @@ Workflow:
 
 POST http://localhost:5050/user/register
 Body: {
-    "email": "gravity.neo@gmail.com"
+    "email": "gravity.neo@gmail.com",
+    "full_name": "FEREGOTTO Romain",
+    "group_id": 1
 }
 
 GET sur la réponse details: linkJwt et mettre le <b>actual</b> de la réponse dans le Authorization (Bearer Token)
@@ -52,7 +54,6 @@ ps: vous n'avez pas la clé ssh pour mon serveur donc ça ne fonctionnera pas co
 ```json
 {
     "name": "ssh",
-    "group_id": 1,
     "test":{
         "host": "193.70.84.157",
         "username": "ubuntu",
@@ -64,7 +65,6 @@ Body 2:
 ```json
 {
     "name": "sgbdr",
-    "group_id": 1,
     "test":{
         "host": "127.0.0.1",
         "username": "root",

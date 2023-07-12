@@ -6,6 +6,7 @@ export interface IUser {
   id: number;
   email: string;
   full_name: string
+  group_id?: number
 }
 
 // Outils de manipulation des types :

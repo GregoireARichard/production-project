@@ -46,7 +46,11 @@ export async function expressAuthentication(
       throw new ApiError(ErrorCode.Unauthorized, 'auth/invalid-access-token', "userId was not found in the payload");
     }  
 
-    return Promise.resolve({userId: decoded.userId})
+    if (!decoded.group_id) {
+      throw new ApiError(ErrorCode.Unauthorized, 'auth/invalid-access-token', "group_id was not found in the payload");
+    } 
+
+    return Promise.resolve({userId: decoded.userId, group_id: decoded.group_id})
   }
   else if(securityName === "JWTADMIN"){
     const authheader = request.headers.authorization || '';

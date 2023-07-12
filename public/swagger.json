@@ -139,10 +139,6 @@
 					"name": {
 						"type": "string"
 					},
-					"group_id": {
-						"type": "number",
-						"format": "double"
-					},
 					"test": {
 						"properties": {
 							"port": {
@@ -167,9 +163,6 @@
 						"type": "object"
 					}
 				},
-				"required": [
-					"group_id"
-				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -184,6 +177,10 @@
 					},
 					"full_name": {
 						"type": "string"
+					},
+					"group_id": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
@@ -239,6 +236,10 @@
 			},
 			"Pick_IUser.Exclude_keyofIUser.id__": {
 				"properties": {
+					"group_id": {
+						"type": "number",
+						"format": "double"
+					},
 					"email": {
 						"type": "string"
 					},
@@ -287,6 +288,10 @@
 			},
 			"Partial_IUserCreate_": {
 				"properties": {
+					"group_id": {
+						"type": "number",
+						"format": "double"
+					},
 					"email": {
 						"type": "string"
 					},

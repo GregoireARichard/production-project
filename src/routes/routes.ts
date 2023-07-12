@@ -91,7 +91,6 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "name": {"dataType":"string"},
-            "group_id": {"dataType":"double","required":true},
             "test": {"dataType":"nestedObjectLiteral","nestedProperties":{"port":{"dataType":"double","required":true},"password":{"dataType":"string"},"username":{"dataType":"string","required":true},"host":{"dataType":"string","required":true}}},
         },
         "additionalProperties": false,
@@ -103,6 +102,7 @@ const models: TsoaRoute.Models = {
             "id": {"dataType":"double","required":true},
             "email": {"dataType":"string","required":true},
             "full_name": {"dataType":"string","required":true},
+            "group_id": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -128,7 +128,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_IUser.Exclude_keyofIUser.id__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"full_name":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"group_id":{"dataType":"double"},"email":{"dataType":"string","required":true},"full_name":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_IUser.id_": {
@@ -152,7 +152,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_IUserCreate_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string"},"full_name":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"group_id":{"dataType":"double"},"email":{"dataType":"string"},"full_name":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUserUpdate": {

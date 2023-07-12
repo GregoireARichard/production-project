@@ -73,8 +73,7 @@ export class UserController {
     if (existUser instanceof Object) {
       user = existUser as IUser;
       // console.log("utilisateur deja existant",user);
-    }
-    else{
+    }else{
         //on crée l'utilisateur en base
        user = await Crud.Create<IUserCreate>({
         body: body, 
@@ -86,6 +85,7 @@ export class UserController {
         const jwt = new JWT();
         const encoded = await jwt.create({
           userId: user.id,
+          group_id: body.group_id
         }, {
           expiresIn: '30 minutes',
           audience: MAGIC_AUD,
