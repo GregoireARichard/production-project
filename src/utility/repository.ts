@@ -126,7 +126,7 @@ export async function getAllExerciseGroups(){
     }
 }
 
-export async function insertOrUpdateExerciseResult(exercise: IExerciseRO, userId: number): Promise<void> {
+export async function insertOrUpdateExerciseResult(exercise: IExerciseRO, user_points: number, userId: number): Promise<void> {
     try {
       const selectQuery = `SELECT id_user FROM user_exercise WHERE id_user = ?`;
       const selectParams = [userId];
@@ -135,13 +135,13 @@ export async function insertOrUpdateExerciseResult(exercise: IExerciseRO, userId
       if (checkuser.length === 0) {
         // Si aucune ligne correspondante n'est trouvée, effectuer un INSERT
         const insertQuery = `INSERT INTO user_exercise (id_user, last_exercice_validate_id, points) VALUES (?, ?, ?)`;
-        const insertParams = [userId, exercise.id, exercise.points ];
+        const insertParams = [userId, exercise.id, user_points ];
   
         await db.query<RowDataPacket[]>(insertQuery, insertParams);
       } else {
         // Si une ligne correspondante est trouvée, effectuer un UPDATE
         const updateQuery = `UPDATE user_exercise SET points =  ?, last_exercice_validate_id = ? WHERE id_user = ?`;
-        const updateParams = [ exercise.points,exercise.id, userId];
+        const updateParams = [ user_points, exercise.id, userId];
 
         await db.query<RowDataPacket[]>(updateQuery, updateParams);
       }

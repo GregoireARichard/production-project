@@ -33,13 +33,14 @@ export class ProductionExerciseController{
     @Post("/exercise")
     public async runExercise(@Body() body: IExerciseBody, @Request() request: any) 
     {
-        const isExerciceActive = await isGroupExerciseActive(body.group_id)
-        if (typeof isExerciceActive !== "boolean") return isExerciceActive
-
+        
         try {
-            const { userId } =  request.user;
+            const { userId, group_id } =  request.user;
+            
+            const isExerciceActive = await isGroupExerciseActive(group_id)
+            if (typeof isExerciceActive !== "boolean") return isExerciceActive
 
-            const AllExercises = await getExercises(body.group_id);
+            const AllExercises = await getExercises(group_id);
             const totalPoints: number = AllExercises.reduce((acc, curr) => acc + curr.points, 0);
             let user_points = 0;
             let potentialResponse = await this.prepareExerciseResponse(AllExercises[0], user_points, totalPoints, false);
@@ -52,8 +53,9 @@ export class ProductionExerciseController{
                 
                 return potentialResponse;
             }
-            await insertOrUpdateExerciseResult(AllExercises[0], userId);
             user_points += AllExercises[0].points;
+            await insertOrUpdateExerciseResult(AllExercises[0], user_points, userId);
+            
 
             potentialResponse = await this.prepareExerciseResponse(AllExercises[1], user_points, totalPoints, false);
 
@@ -65,8 +67,9 @@ export class ProductionExerciseController{
 
                 return potentialResponse;
             }
-            await insertOrUpdateExerciseResult(AllExercises[1], userId);
             user_points += AllExercises[1].points;
+            await insertOrUpdateExerciseResult(AllExercises[1], user_points, userId);
+            
               
             //Test boucle infini: i=0; while true; do ((i++)); sleep 1; done
             for (const exercise of AllExercises) {
@@ -115,7 +118,10 @@ export class ProductionExerciseController{
                 }
           
                 // On UPDATE en DB Test réussi
-                await insertOrUpdateExerciseResult(exercise, userId);
+
+                user_points += exercise.points;
+                await insertOrUpdateExerciseResult(exercise, user_points, userId);
+                
               }
           
               mysql_connexion.release();
@@ -131,8 +137,6 @@ export class ProductionExerciseController{
                 totalPoints,
                 this.getPreviousExercises(AllExercises, AllExercises.length)
             );
-
-            // On insère en DB Test Terminé
 
             return exerciseResponse;
 

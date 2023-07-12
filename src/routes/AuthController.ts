@@ -7,6 +7,7 @@ import { Email } from "../utility/Email";
 import { ApiError } from "../utility/Error/ApiError";
 import { ErrorCode } from "../utility/Error/ErrorCode";
 import { JWT } from "../utility/JWT";
+import { DB } from "../utility/DB";
 
 
 export const ISSUER = "api-auth";
@@ -89,7 +90,8 @@ export class AuthController {
     });
 
     let payload: IAccessToken = {
-      userId: user.id
+      userId: user.id,
+      group_id: decoded.group_id
     };
     
 

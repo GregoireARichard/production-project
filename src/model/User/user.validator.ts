@@ -5,7 +5,7 @@ const UserCreateSchema : JSONSchemaType<IUserCreate> = {
   type: "object",
   properties: {
     email: { type: 'string' },  
-    full_name: { type: 'string' },  
+    full_name: { type: 'string' }
   },
   required: ["email"],
   additionalProperties: false,
@@ -15,7 +15,7 @@ const UserUpdateSchema : JSONSchemaType<IUserUpdate> = {
   type: "object",
   properties: {
     email: { type: 'string', nullable: true },  
-    full_name: { type: 'string', nullable: true }, 
+    full_name: { type: 'string', nullable: true } 
   },  
   additionalProperties: false,
 };

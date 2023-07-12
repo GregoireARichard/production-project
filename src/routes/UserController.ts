@@ -1,5 +1,5 @@
 import { Body, Delete, Get, Path, Post, Put, Query, Route } from 'tsoa';
-import { IUser, IUserCreate, IUserUpdate } from '../model/User/IUser';
+import { IUser, IUserCreate, IUserGroupID, IUserUpdate } from '../model/User/IUser';
 import { ICreateResponse } from '../types/ICreateResponse';
 import { IIndexResponse } from '../types/IIndexQuery';
 import { IUpdateResponse } from '../types/IUpdateResponse';
@@ -57,27 +57,32 @@ export class UserController {
    */
   @Post('/register')
   public async registerUser(
-    @Body() body: IUserCreate
+    @Body() body: any
   ): Promise<{ ok: boolean}> {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(body.email)) {
       throw new ApiError(ErrorCode.BadRequest, 'auth/missing-email', "Bad Email");
       }
+
+    if (!body.group_id) {
+      throw new ApiError(ErrorCode.BadRequest, 'auth/missing-group-id', "Bad group_id");
+      }
+
     const existUser = await Crud.CheckExists<IUser>({
       table: 'user', 
       idKey: 'email', 
       idValue: body.email, 
       columns: READ_COLUMNS
     });
+    
     let user: IUser | ICreateResponse;
     if (existUser instanceof Object) {
       user = existUser as IUser;
-      // console.log("utilisateur deja existant",user);
-    }
-    else{
+    }else{
+      const { group_id, ...newBody } = body;
         //on crée l'utilisateur en base
        user = await Crud.Create<IUserCreate>({
-        body: body, 
+        body: newBody, 
         table: 'user'
       });
     }
@@ -86,6 +91,7 @@ export class UserController {
         const jwt = new JWT();
         const encoded = await jwt.create({
           userId: user.id,
+          group_id: body.group_id
         }, {
           expiresIn: '30 minutes',
           audience: MAGIC_AUD,
