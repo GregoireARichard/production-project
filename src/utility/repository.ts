@@ -116,7 +116,6 @@ export async function getStudentsResults(): Promise<any> {
 
 }
 
-
 const getAllExercisesGroupsQuery = "SELECT is_active, name from exercise_group"
 export async function getAllExerciseGroups(){
     try {
@@ -127,7 +126,7 @@ export async function getAllExerciseGroups(){
     }
 }
 
-export async function insertOrUpdateExerciseResult(exercise: IExercise, userId: number): Promise<void> {
+export async function insertOrUpdateExerciseResult(exercise: IExerciseRO, userId: number): Promise<void> {
     try {
       const selectQuery = `SELECT id_user FROM user_exercise WHERE id_user = ?`;
       const selectParams = [userId];
