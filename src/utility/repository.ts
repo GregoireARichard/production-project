@@ -44,6 +44,7 @@ export async function isGroupExerciseActive(groupId: number): Promise< boolean|I
           description: "L'exercice est terminé !",
           clue: "",
           user_points: 0,
+          question_number: 0,
           exercise_points: 0,
           total_point: 0,
           passed: false
