@@ -113,3 +113,37 @@ Body 2: <br>
     }
 }
 ```
+
+## Partie administrateur
+
+Pour la partie administrateur il faut d'abord se connecter avec les identifiants donnés sur la route ```POST /admin/login/```
+
+Avec la payload suivante : 
+```json
+{
+   "email": "votre@email.net",
+   "password": "password"
+}
+
+```
+
+Un JWT vous sera ensuite renvoyé et vous devrez le mettre dans votre authentification.
+
+Suite à ça 4 routes vous seront accessibles :
+
+- ```GET  admin/exercise_list/ ``` pour récupérer la liste des tous les exercices
+- ```POST admin/exercise``` 
+```json
+    {
+        "state": true,
+        "name" : "nom de l'exercice"
+    }
+```
+- ```GET  admin/results/ ``` pour récupérer tous les résultats des élèves, à savoir que le téléchargement du fichier xlsx a été écrit en front directement.
+- ```POST admin/add_exercise_group/``` pour ajouter un challenge
+```json
+{
+    "name": "nom du challenge"
+}
+```
+à savoir qu'évidemment le nom ne peut être vide.
