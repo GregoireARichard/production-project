@@ -8,6 +8,7 @@ export interface IDefaultExerciseResponse {
     clue: string | false,
     user_points: number,
     exercise_points: number,
+    question_number: number;
     total_point: number
     passed: IPreviousExercises | false
 }

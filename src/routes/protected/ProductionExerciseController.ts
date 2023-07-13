@@ -43,8 +43,7 @@ export class ProductionExerciseController{
             const AllExercises = await getExercises(group_id);
             const totalPoints: number = AllExercises.reduce((acc, curr) => acc + curr.points, 0);
             let user_points = 0;
-            let potentialResponse = await this.prepareExerciseResponse(AllExercises[0], user_points, totalPoints, false);
-            
+            let potentialResponse = await this.prepareExerciseResponse(AllExercises[0], user_points, totalPoints, false);            
 
             const ssh = await this.GetSSHConnexion(userId, body as IExerciseFullBody);
             
@@ -134,6 +133,7 @@ export class ProductionExerciseController{
                 "",
                 user_points,
                 0,
+                AllExercises.length - 1,
                 totalPoints,
                 this.getPreviousExercises(AllExercises, AllExercises.length)
             );
@@ -162,6 +162,7 @@ export class ProductionExerciseController{
             exercice.description,
             exercice.clue,
             userPoints | 0,
+            exercice.question_number,
             exercice.points,
             totalPoints,
             exercisesPassed
@@ -175,7 +176,7 @@ export class ProductionExerciseController{
         try {
             const db = DB.Connection;
             const isMetaSSH = await db.query<RowDataPacket[]>(`select COUNT(*) as nb_rows from meta_user_info where id_user = ? AND type='ssh'`, [userId]);
-            
+
             if(isMetaSSH[0][0].nb_rows === 0)
             {
                 try {
@@ -358,6 +359,7 @@ export class ProductionExerciseController{
         description: string,
         clue: string | false,
         userPoints: number,
+        question_number: number,
         exercisePoints: number,
         totalPoints: number,
         passed: IPreviousExercises | false
@@ -368,6 +370,7 @@ export class ProductionExerciseController{
           name: name,
           description: description,
           clue: clue,
+          question_number: question_number,
           user_points: userPoints,
           exercise_points: exercisePoints,
           total_point: totalPoints,
